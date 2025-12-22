@@ -25,7 +25,9 @@ export function ProductCard({ product, onEdit }) {
     mobile: localStorage.getItem('user_mobile') || ''
   });
 
-  const [userRating, setUserRating] = useState(0);
+  const [userRating, setUserRating] = useState(() => {
+    return Number(localStorage.getItem(`rating_${product._id}`)) || 0;
+  });
   const [hoverRating, setHoverRating] = useState(0);
   const [ratingLoading, setRatingLoading] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
@@ -47,7 +49,8 @@ export function ProductCard({ product, onEdit }) {
         body: JSON.stringify({ rating: star }),
       });
       if (response.ok) {
-        setUserRating(star); // Just for visual feedback in this session
+        setUserRating(star);
+        localStorage.setItem(`rating_${product._id}`, star);
         // In a real app, we'd refetch the product to update the average
       }
     } catch (error) {
@@ -187,7 +190,7 @@ export function ProductCard({ product, onEdit }) {
                     onMouseEnter={() => setHoverRating(star)}
                     onMouseLeave={() => setHoverRating(0)}
                     disabled={isAdmin || ratingLoading}
-                    className={`text-xl focus:outline-none transition-colors ${(hoverRating || userRating || Math.round(averageRating)) >= star
+                    className={`text-xl focus:outline-none transition-colors ${(hoverRating || userRating) >= star
                       ? 'text-yellow-400'
                       : 'text-gray-300'
                       }`}
@@ -197,7 +200,7 @@ export function ProductCard({ product, onEdit }) {
                 ))}
               </div>
               <div className="text-xs text-gray-500 font-medium mt-0.5">
-                ({ratings.length} {ratings.length === 1 ? 'rating' : 'ratings'})
+                {averageRating > 0 ? `(${averageRating})` : '(No ratings yet)'} • {ratings.length} {ratings.length === 1 ? 'rating' : 'ratings'}
               </div>
             </div>
           </div>
@@ -375,10 +378,12 @@ export function ProductCard({ product, onEdit }) {
                 <div className="mb-4">
                   <div className="flex items-center gap-1">
                     <span className="text-yellow-400 text-2xl">★</span>
-                    <span className="font-bold text-gray-900 text-lg">{averageRating}</span>
+                    <span className="font-bold text-gray-900 text-lg">
+                      {averageRating > 0 ? `(${averageRating})` : '(0.0)'}
+                    </span>
                   </div>
                   <div className="text-gray-500 text-sm mt-1">
-                    ({ratings.length} {ratings.length === 1 ? 'rating' : 'ratings'})
+                    {ratings.length} {ratings.length === 1 ? 'rating' : 'ratings'}
                   </div>
                 </div>
 

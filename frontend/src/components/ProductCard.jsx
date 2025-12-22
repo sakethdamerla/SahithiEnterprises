@@ -51,7 +51,9 @@ export function ProductCard({ product, onEdit }) {
       if (response.ok) {
         setUserRating(star);
         localStorage.setItem(`rating_${product._id}`, star);
-        // In a real app, we'd refetch the product to update the average
+
+        // Optimistically update the product's ratings array in the UI
+        product.ratings.push(star);
       }
     } catch (error) {
       console.error(error);

@@ -66,6 +66,27 @@ app.delete('/api/products/:id', async (req, res) => {
     }
 });
 
+// Rate a product
+app.post('/api/products/:id/rate', async (req, res) => {
+    try {
+        const { rating } = req.body;
+        if (!rating || rating < 1 || rating > 5) {
+            return res.status(400).json({ message: 'Invalid rating (1-5)' });
+        }
+
+        const product = await Product.findById(req.params.id);
+        if (!product) return res.status(404).json({ message: 'Product not found' });
+
+        product.ratings.push(rating);
+        await product.save();
+
+        res.status(200).json(product);
+    } catch (error) {
+        console.error('Error rating product:', error);
+        res.status(500).json({ message: error.message });
+    }
+});
+
 // Submit Interest
 app.post('/api/interests', async (req, res) => {
     try {

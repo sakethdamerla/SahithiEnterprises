@@ -20,7 +20,40 @@ export function ProductCard({ product, onEdit }) {
     mobile: localStorage.getItem('user_mobile') || ''
   });
 
+  const [userRating, setUserRating] = useState(0);
+  const [hoverRating, setHoverRating] = useState(0);
+  const [ratingLoading, setRatingLoading] = useState(false);
+
+  // Calculate average rating
+  const ratings = product.ratings || [];
+  const averageRating = ratings.length > 0
+    ? (ratings.reduce((a, b) => a + b, 0) / ratings.length).toFixed(1)
+    : 0;
+
+  const handleRate = async (star) => {
+    if (ratingLoading) return;
+    setRatingLoading(true);
+    try {
+      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+      const response = await fetch(`${API_URL}/products/${product._id}/rate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ rating: star }),
+      });
+      if (response.ok) {
+        setUserRating(star); // Just for visual feedback in this session
+        // In a real app, we'd refetch the product to update the average
+      }
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setRatingLoading(false);
+    }
+  };
+
   const handleInterested = async () => {
+    if (product.isTemporarilyClosed) return; // Prevent if closed
+
     const mobile = localStorage.getItem('user_mobile');
     const username = localStorage.getItem('user_name');
 
@@ -92,7 +125,7 @@ export function ProductCard({ product, onEdit }) {
     <>
       <div
         onClick={handleCardClick}
-        className="card overflow-hidden flex flex-col h-full cursor-pointer group"
+        className={`card overflow-hidden flex flex-col h-full cursor-pointer group ${product.isTemporarilyClosed ? 'opacity-75 grayscale-[0.5]' : ''}`}
       >
         {/* Product Image */}
         <div className="relative h-48 md:h-64 overflow-hidden bg-gray-200">
@@ -111,15 +144,45 @@ export function ProductCard({ product, onEdit }) {
           <div className="absolute top-2 right-2 px-3 py-1 bg-white/90 backdrop-blur-sm rounded-full text-xs font-semibold text-primary-600 capitalize">
             {product.category}
           </div>
+          {/* Out of Stock Overlay */}
+          {product.isTemporarilyClosed && (
+            <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+              <span className="bg-red-600 text-white px-4 py-2 rounded-lg font-bold uppercase tracking-wider text-sm shadow-lg transform -rotate-12 border-2 border-white">
+                Out of Stock
+              </span>
+            </div>
+          )}
         </div>
 
         {/* Product Details */}
         <div className="p-4 md:p-6 flex flex-col flex-grow">
-          <h3 className="text-xl font-bold text-gray-900 mb-2">
-            {product.title}
-          </h3>
+          <div className="mb-2">
+            <h3 className="text-xl font-bold text-gray-900 leading-tight">
+              {product.title}
+            </h3>
+            {/* Rating Stars */}
+            <div className="flex items-center gap-1 mt-1">
+              {[1, 2, 3, 4, 5].map((star) => (
+                <button
+                  key={star}
+                  type="button"
+                  onClick={(e) => { e.stopPropagation(); handleRate(star); }}
+                  onMouseEnter={() => setHoverRating(star)}
+                  onMouseLeave={() => setHoverRating(0)}
+                  disabled={isAdmin || ratingLoading}
+                  className={`text-lg focus:outline-none transition-colors ${(hoverRating || userRating || Math.round(averageRating)) >= star
+                    ? 'text-yellow-400'
+                    : 'text-gray-300'
+                    }`}
+                >
+                  ★
+                </button>
+              ))}
+              <span className="text-xs text-gray-500 ml-1">({ratings.length})</span>
+            </div>
+          </div>
 
-          <p className="text-gray-600 text-sm mb-4 flex-grow">
+          <p className="text-gray-600 text-sm mb-4 flex-grow line-clamp-3">
             {product.description}
           </p>
 
@@ -145,15 +208,25 @@ export function ProductCard({ product, onEdit }) {
               <div className="flex flex-col items-end w-full sm:w-auto">
                 <button
                   onClick={handleInterested}
-                  disabled={loading || isInterestSubmitted}
-                  className="w-full sm:w-auto px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors font-medium text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                  disabled={loading || isInterestSubmitted || product.isTemporarilyClosed}
+                  className={`w-full sm:w-auto px-4 py-2 text-white rounded-lg font-medium text-sm focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors
+                    ${product.isTemporarilyClosed
+                      ? 'bg-gray-400 cursor-not-allowed'
+                      : 'bg-primary-600 hover:bg-primary-700 focus:ring-primary-500'
+                    }`}
                 >
-                  {isInterestSubmitted ? 'Interested ✓' : loading ? 'Sending...' : 'Interested'}
+                  {product.isTemporarilyClosed
+                    ? 'Out of Stock'
+                    : isInterestSubmitted
+                      ? 'Interested ✓'
+                      : loading
+                        ? 'Sending...'
+                        : 'Interested'}
                 </button>
 
                 {/* Interest Popup Modal */}
                 {showInput && (
-                  <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+                  <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200" onClick={(e) => e.stopPropagation()}>
                     <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 transform scale-100 transition-all">
                       <div className="text-center mb-6">
                         <div className="w-12 h-12 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-3">
@@ -244,6 +317,14 @@ export function ProductCard({ product, onEdit }) {
                 onError={(e) => { if (e.target.src !== fallback) e.target.src = fallback; }}
                 className="w-full h-full object-cover"
               />
+              {/* Out of Stock Overlay */}
+              {product.isTemporarilyClosed && (
+                <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                  <span className="bg-red-600 text-white px-4 py-2 rounded-lg font-bold uppercase tracking-wider text-sm shadow-lg transform -rotate-12 border-2 border-white">
+                    Out of Stock
+                  </span>
+                </div>
+              )}
             </div>
 
             {/* Details Content */}
@@ -252,9 +333,17 @@ export function ProductCard({ product, onEdit }) {
                 <span className="inline-block px-3 py-1 bg-primary-50 text-primary-700 rounded-full text-xs font-semibold uppercase tracking-wide mb-3">
                   {product.category}
                 </span>
-                <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-4">
+                <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
                   {product.title}
                 </h2>
+
+                {/* Rating in Modal */}
+                <div className="flex items-center gap-1 mb-4">
+                  <span className="text-yellow-400 text-xl">★</span>
+                  <span className="font-bold text-gray-900">{averageRating}</span>
+                  <span className="text-gray-500 text-sm">({ratings.length} ratings)</span>
+                </div>
+
                 <div className="text-3xl font-bold text-primary-600 mb-6">
                   ₹{product.price.toFixed(2)}
                 </div>
@@ -268,17 +357,21 @@ export function ProductCard({ product, onEdit }) {
                 <div className="mt-auto pt-6 border-t">
                   <button
                     onClick={handleInterestedClickFromDetails}
-                    disabled={isInterestSubmitted}
-                    className={`w-full py-3 rounded-xl transition-all font-semibold text-lg shadow-lg active:scale-95 ${isInterestSubmitted
+                    disabled={isInterestSubmitted || product.isTemporarilyClosed}
+                    className={`w-full py-3 rounded-xl transition-all font-semibold text-lg shadow-lg active:scale-95 ${product.isTemporarilyClosed
+                      ? 'bg-gray-400 cursor-not-allowed'
+                      : isInterestSubmitted
                         ? 'bg-green-600 text-white shadow-green-600/30 cursor-not-allowed opacity-90'
                         : 'bg-primary-600 text-white hover:bg-primary-700 shadow-primary-600/30'
                       }`}
                   >
-                    {isInterestSubmitted ? 'Response Recorded ✓' : "I'm Interested"}
+                    {product.isTemporarilyClosed ? 'Out of Stock' : (isInterestSubmitted ? 'Response Recorded ✓' : "I'm Interested")}
                   </button>
-                  <p className="text-center text-xs text-gray-500 mt-2">
-                    Click to share your details with us
-                  </p>
+                  {!product.isTemporarilyClosed && (
+                    <p className="text-center text-xs text-gray-500 mt-2">
+                      Click to share your details with us
+                    </p>
+                  )}
                 </div>
               )}
             </div>

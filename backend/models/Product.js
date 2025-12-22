@@ -6,6 +6,8 @@ const productSchema = new mongoose.Schema({
     description: { type: String, required: true },
     imageUrl: { type: String, required: true },
     category: { type: String, required: true },
+    isTemporarilyClosed: { type: Boolean, default: false },
+    ratings: { type: [Number], default: [] },
 });
 
 export const Product = mongoose.model('Product', productSchema);

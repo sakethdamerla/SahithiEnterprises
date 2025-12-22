@@ -374,7 +374,11 @@ export function AdminDashboard() {
                 {filteredInterests.map((interest) => (
                   <tr key={interest._id}>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{interest.username}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{interest.mobile}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      <a href={`tel:${interest.mobile}`} className="text-primary-600 hover:text-primary-800 hover:underline">
+                        {interest.mobile}
+                      </a>
+                    </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{interest.productTitle}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{new Date(interest.date).toLocaleString()}</td>
                   </tr>

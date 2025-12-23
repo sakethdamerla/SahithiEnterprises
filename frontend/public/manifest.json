@@ -8,14 +8,14 @@
     "description": "Enterprise Product Site PWA",
     "icons": [
         {
-            "src": "vite.svg",
+            "src": "SE.png",
             "sizes": "192x192",
-            "type": "image/svg+xml"
+            "type": "image/png"
         },
         {
-            "src": "vite.svg",
+            "src": "SE.png",
             "sizes": "512x512",
-            "type": "image/svg+xml"
+            "type": "image/png"
         }
     ]
 }

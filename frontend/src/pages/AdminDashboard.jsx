@@ -27,6 +27,7 @@ export function AdminDashboard() {
   const [filter, setFilter] = useState('');
   const [activeView, setActiveView] = useState('products');
   const [isFormOpen, setIsFormOpen] = useState(false);
+  const [selectedFile, setSelectedFile] = useState(null);
 
   const PREDEFINED_CATEGORIES = ['electronics', 'tyres', 'power'];
 
@@ -100,33 +101,65 @@ export function AdminDashboard() {
     if (!formState.description.trim()) nextErrors.description = 'Description is required';
     if (!formState.title.trim()) nextErrors.title = 'Title is required';
     if (!formState.description.trim()) nextErrors.description = 'Description is required';
-    if (!formState.imageUrl.trim()) nextErrors.imageUrl = 'Image URL is required';
+    if (!formState.title.trim()) nextErrors.title = 'Title is required';
+    if (!formState.description.trim()) nextErrors.description = 'Description is required';
+    if (!formState.imageUrl.trim() && !selectedFile) nextErrors.imageUrl = 'Image is required';
     if (!formState.category.trim()) nextErrors.category = 'Category is required';
     if (!formState.price || Number.isNaN(Number(formState.price))) nextErrors.price = 'Valid price is required';
     setErrors(nextErrors);
     return Object.keys(nextErrors).length === 0;
   };
 
-  const handleSubmit = (e) => {
+  const uploadFile = async (file) => {
+    const formData = new FormData();
+    formData.append('image', file);
+
+    const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+    const response = await fetch(`${API_URL}/upload`, {
+      method: 'POST',
+      body: formData,
+    });
+
+    if (!response.ok) {
+      throw new Error('File upload failed');
+    }
+
+    const data = await response.json();
+    return data.imageUrl;
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validate()) return;
+
+    let imageUrl = formState.imageUrl;
+
+    if (selectedFile) {
+      try {
+        imageUrl = await uploadFile(selectedFile);
+      } catch (error) {
+        console.error('Upload failed:', error);
+        setErrors((prev) => ({ ...prev, imageUrl: 'Failed to upload image' }));
+        return;
+      }
+    }
 
     const payload = {
       title: formState.title.trim(),
       description: formState.description.trim(),
-      imageUrl: formState.imageUrl.trim(),
+      imageUrl: imageUrl.trim(),
       category: formState.category.trim(),
       price: Number(formState.price),
       isTemporarilyClosed: formState.isTemporarilyClosed,
     };
 
     if (formState.id) {
-      updateProduct(formState.id, payload);
+      await updateProduct(formState.id, payload);
     } else {
-      addProduct(payload);
+      await addProduct(payload);
     }
     setFormState(emptyForm);
-    setFormState(emptyForm);
+    setSelectedFile(null);
     setIsFormOpen(false);
   };
 
@@ -234,23 +267,49 @@ export function AdminDashboard() {
                       </div>
 
                       <div>
-                        <label className="block text-sm font-medium text-gray-700">Image URL</label>
-                        <input
-                          className="input-field mt-1"
-                          value={formState.imageUrl}
-                          onChange={(e) => setFormState((prev) => ({ ...prev, imageUrl: e.target.value }))}
-                          required
-                        />
-                        {formState.imageUrl && (
-                          <div className="mt-2 relative w-full h-40 bg-gray-100 rounded-lg overflow-hidden border">
-                            <img
-                              src={formState.imageUrl}
-                              alt="Preview"
-                              className="w-full h-full object-contain"
-                              onError={(e) => e.currentTarget.src = 'https://via.placeholder.com/300?text=Invalid+URL'}
-                            />
+                        <label className="block text-sm font-medium text-gray-700">Product Image</label>
+                        <div className="mt-1 space-y-2">
+                          {formState.imageUrl && !selectedFile && (
+                            <div className="relative w-full h-40 bg-gray-100 rounded-lg overflow-hidden border">
+                              <img
+                                src={formState.imageUrl}
+                                alt="Current product"
+                                className="w-full h-full object-contain"
+                              />
+                              <button
+                                type="button"
+                                onClick={() => setFormState(prev => ({ ...prev, imageUrl: '' }))}
+                                className="absolute top-2 right-2 bg-red-100 text-red-600 p-1 rounded-full hover:bg-red-200"
+                              >
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                                  <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                                </svg>
+                              </button>
+                            </div>
+                          )}
+                          <div className="flex items-center justify-center w-full">
+                            <label htmlFor="dropzone-file" className="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100">
+                              <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                                <svg className="w-8 h-8 mb-4 text-gray-500" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 16">
+                                  <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2" />
+                                </svg>
+                                <p className="mb-2 text-sm text-gray-500"><span className="font-semibold">{selectedFile ? selectedFile.name : 'Click to upload'}</span> or drag and drop</p>
+                                <p className="text-xs text-gray-500">SVG, PNG, JPG or GIF</p>
+                              </div>
+                              <input
+                                id="dropzone-file"
+                                type="file"
+                                className="hidden"
+                                accept="image/*"
+                                onChange={(e) => {
+                                  if (e.target.files && e.target.files[0]) {
+                                    setSelectedFile(e.target.files[0]);
+                                  }
+                                }}
+                              />
+                            </label>
                           </div>
-                        )}
+                        </div>
                         {errors.imageUrl && <p className="text-sm text-red-600 mt-1">{errors.imageUrl}</p>}
                       </div>
 
@@ -318,6 +377,7 @@ export function AdminDashboard() {
                           type="button"
                           onClick={() => {
                             setFormState(emptyForm);
+                            setSelectedFile(null);
                             setIsFormOpen(false);
                           }}
                           className="btn-secondary flex-1"
@@ -339,6 +399,7 @@ export function AdminDashboard() {
               <button
                 onClick={() => {
                   setFormState(emptyForm);
+                  setSelectedFile(null);
                   setIsFormOpen(true);
                 }}
                 className="w-full sm:w-auto py-2 px-6 btn-primary flex items-center justify-center gap-2 mb-4 shadow-lg shadow-primary-600/20"

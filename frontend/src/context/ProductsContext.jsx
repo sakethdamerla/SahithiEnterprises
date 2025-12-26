@@ -87,6 +87,7 @@ const initialProducts = [
  */
 export function ProductsProvider({ children }) {
   const [products, setProducts] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
   const API_URL = `${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/products`;
 
   useEffect(() => {
@@ -102,6 +103,8 @@ export function ProductsProvider({ children }) {
       }
     } catch (error) {
       console.error('Failed to fetch products:', error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -199,6 +202,7 @@ export function ProductsProvider({ children }) {
 
   const value = {
     products,
+    isLoading,
     addProduct,
     updateProduct,
     deleteProduct,

@@ -41,8 +41,8 @@ export function Header() {
       <nav className="container mx-auto px-4 py-4" aria-label="Main navigation">
         <div className="flex items-center justify-between">
           {/* Logo */}
-          <Link 
-            to="/" 
+          <Link
+            to="/"
             className="text-2xl font-bold text-primary-600 hover:text-primary-700 transition-colors"
             aria-label="Home"
           >
@@ -51,8 +51,8 @@ export function Header() {
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-6">
-            <Link 
-              to="/" 
+            <Link
+              to="/"
               className="text-gray-700 hover:text-primary-600 transition-colors font-medium"
             >
               Home
@@ -68,19 +68,19 @@ export function Header() {
                 aria-haspopup="true"
               >
                 Categories
-                <svg 
-                  className="w-4 h-4 ml-1" 
-                  fill="none" 
-                  stroke="currentColor" 
+                <svg
+                  className="w-4 h-4 ml-1"
+                  fill="none"
+                  stroke="currentColor"
                   viewBox="0 0 24 24"
                   aria-hidden="true"
                 >
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                 </svg>
               </button>
-              
+
               {categoryDropdownOpen && (
-                <div 
+                <div
                   className="absolute top-full left-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-2"
                   role="menu"
                 >
@@ -99,15 +99,7 @@ export function Header() {
               )}
             </div>
 
-            {/* Admin Link - Only visible when logged in */}
-            {isAdmin && (
-              <Link 
-                to="/admin" 
-                className="text-secondary-600 hover:text-secondary-700 transition-colors font-medium"
-              >
-                Admin Dashboard
-              </Link>
-            )}
+
 
             {/* Search Form */}
             <form onSubmit={handleSearch} className="relative">
@@ -119,7 +111,7 @@ export function Header() {
                 className="px-4 py-2 pl-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent w-64"
                 aria-label="Search products"
               />
-              <svg 
+              <svg
                 className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2"
                 fill="none"
                 stroke="currentColor"
@@ -148,10 +140,10 @@ export function Header() {
             aria-expanded={mobileMenuOpen}
             aria-label="Toggle mobile menu"
           >
-            <svg 
-              className="w-6 h-6" 
-              fill="none" 
-              stroke="currentColor" 
+            <svg
+              className="w-6 h-6"
+              fill="none"
+              stroke="currentColor"
               viewBox="0 0 24 24"
               aria-hidden="true"
             >
@@ -168,8 +160,8 @@ export function Header() {
         {mobileMenuOpen && (
           <div className="md:hidden mt-4 pb-4 border-t pt-4">
             <div className="flex flex-col space-y-4">
-              <Link 
-                to="/" 
+              <Link
+                to="/"
                 className="text-gray-700 hover:text-primary-600 transition-colors font-medium"
                 onClick={() => setMobileMenuOpen(false)}
               >
@@ -201,7 +193,7 @@ export function Header() {
                   className="w-full px-4 py-2 pl-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                   aria-label="Search products"
                 />
-                <svg 
+                <svg
                   className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2"
                   fill="none"
                   stroke="currentColor"
@@ -214,13 +206,6 @@ export function Header() {
 
               {isAdmin && (
                 <>
-                  <Link 
-                    to="/admin" 
-                    className="text-secondary-600 hover:text-secondary-700 transition-colors font-medium"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    Admin Dashboard
-                  </Link>
                   <button
                     onClick={() => {
                       handleLogout();

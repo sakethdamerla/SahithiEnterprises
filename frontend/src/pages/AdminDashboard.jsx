@@ -26,6 +26,7 @@ export function AdminDashboard() {
   const [errors, setErrors] = useState({});
   const [filter, setFilter] = useState('');
   const [activeView, setActiveView] = useState('products');
+  const [isFormOpen, setIsFormOpen] = useState(false);
 
   const PREDEFINED_CATEGORIES = ['electronics', 'tyres', 'power'];
 
@@ -97,6 +98,8 @@ export function AdminDashboard() {
     const nextErrors = {};
     if (!formState.title.trim()) nextErrors.title = 'Title is required';
     if (!formState.description.trim()) nextErrors.description = 'Description is required';
+    if (!formState.title.trim()) nextErrors.title = 'Title is required';
+    if (!formState.description.trim()) nextErrors.description = 'Description is required';
     if (!formState.imageUrl.trim()) nextErrors.imageUrl = 'Image URL is required';
     if (!formState.category.trim()) nextErrors.category = 'Category is required';
     if (!formState.price || Number.isNaN(Number(formState.price))) nextErrors.price = 'Valid price is required';
@@ -123,6 +126,8 @@ export function AdminDashboard() {
       addProduct(payload);
     }
     setFormState(emptyForm);
+    setFormState(emptyForm);
+    setIsFormOpen(false);
   };
 
   const handleEdit = (product) => {
@@ -135,6 +140,8 @@ export function AdminDashboard() {
       category: product.category,
       isTemporarilyClosed: product.isTemporarilyClosed || false,
     });
+    setIsFormOpen(true);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleDelete = (id) => {
@@ -193,115 +200,155 @@ export function AdminDashboard() {
 
       <div className="container mx-auto px-4 py-8">
         {activeView === 'products' ? (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Form */}
-            <section className="lg:col-span-1 bg-white rounded-xl shadow-sm border p-6 space-y-6 h-fit sticky top-24">
-              <div className="space-y-1">
-                <p className="text-sm font-semibold text-primary-600 uppercase tracking-wide">Product form</p>
-                <h2 className="text-2xl font-bold text-gray-900">{formState.id ? 'Edit product' : 'Add new product'}</h2>
-                <p className="text-sm text-gray-600">All fields are required.</p>
-              </div>
-
-              <form onSubmit={handleSubmit} className="space-y-4" aria-label="Product form">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Title</label>
-                  <input
-                    className="input-field mt-1"
-                    value={formState.title}
-                    onChange={(e) => setFormState((prev) => ({ ...prev, title: e.target.value }))}
-                    required
-                  />
-                  {errors.title && <p className="text-sm text-red-600 mt-1">{errors.title}</p>}
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Image URL</label>
-                  <input
-                    className="input-field mt-1"
-                    value={formState.imageUrl}
-                    onChange={(e) => setFormState((prev) => ({ ...prev, imageUrl: e.target.value }))}
-                    required
-                  />
-                  {errors.imageUrl && <p className="text-sm text-red-600 mt-1">{errors.imageUrl}</p>}
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Price</label>
-                  <input
-                    className="input-field mt-1"
-                    type="number"
-                    min="0"
-                    step="0.01"
-                    value={formState.price}
-                    onChange={(e) => setFormState((prev) => ({ ...prev, price: e.target.value }))}
-                    required
-                  />
-                  {errors.price && <p className="text-sm text-red-600 mt-1">{errors.price}</p>}
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Description</label>
-                  <textarea
-                    className="input-field mt-1"
-                    rows="3"
-                    value={formState.description}
-                    onChange={(e) => setFormState((prev) => ({ ...prev, description: e.target.value }))}
-                    required
-                  />
-                  {errors.description && <p className="text-sm text-red-600 mt-1">{errors.description}</p>}
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Category</label>
-                  <select
-                    className="input-field mt-1"
-                    value={formState.category}
-                    onChange={(e) => setFormState((prev) => ({ ...prev, category: e.target.value }))}
-                    required
-                  >
-                    <option value="">Select category</option>
-                    {categories.map((c) => (
-                      <option key={c} value={c} className="capitalize">
-                        {c}
-                      </option>
-                    ))}
-                  </select>
-                  {errors.category && <p className="text-sm text-red-600 mt-1">{errors.category}</p>}
-                </div>
-
-                <div className="flex items-center gap-2 py-2">
-                  <input
-                    type="checkbox"
-                    id="isTemporarilyClosed"
-                    checked={formState.isTemporarilyClosed}
-                    onChange={(e) => setFormState((prev) => ({ ...prev, isTemporarilyClosed: e.target.checked }))}
-                    className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
-                  />
-                  <label htmlFor="isTemporarilyClosed" className="text-sm font-medium text-gray-700">
-                    Mark as Out of Stock
-                  </label>
-                </div>
-
-                <div className="flex gap-3">
-                  <button type="submit" className="btn-primary flex-1">
-                    {formState.id ? 'Update product' : 'Add product'}
-                  </button>
-                  {formState.id && (
+          <div>
+            {/* Form Modal */}
+            {isFormOpen && (
+              <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+                <div className="bg-white rounded-xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto flex flex-col">
+                  <div className="p-6 border-b flex justify-between items-center sticky top-0 bg-white z-10">
+                    <div>
+                      <h2 className="text-xl font-bold text-gray-900">{formState.id ? 'Edit Product' : 'Add New Product'}</h2>
+                      <p className="text-sm text-gray-500">Enter product details below</p>
+                    </div>
                     <button
-                      type="button"
-                      onClick={() => setFormState(emptyForm)}
-                      className="btn-secondary"
+                      onClick={() => setIsFormOpen(false)}
+                      className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-500"
                     >
-                      Cancel
+                      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
                     </button>
-                  )}
-                </div>
-              </form>
+                  </div>
 
-            </section>
+                  <div className="p-6">
+                    <form onSubmit={handleSubmit} className="space-y-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700">Title</label>
+                        <input
+                          className="input-field mt-1"
+                          value={formState.title}
+                          onChange={(e) => setFormState((prev) => ({ ...prev, title: e.target.value }))}
+                          required
+                        />
+                        {errors.title && <p className="text-sm text-red-600 mt-1">{errors.title}</p>}
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700">Image URL</label>
+                        <input
+                          className="input-field mt-1"
+                          value={formState.imageUrl}
+                          onChange={(e) => setFormState((prev) => ({ ...prev, imageUrl: e.target.value }))}
+                          required
+                        />
+                        {formState.imageUrl && (
+                          <div className="mt-2 relative w-full h-40 bg-gray-100 rounded-lg overflow-hidden border">
+                            <img
+                              src={formState.imageUrl}
+                              alt="Preview"
+                              className="w-full h-full object-contain"
+                              onError={(e) => e.currentTarget.src = 'https://via.placeholder.com/300?text=Invalid+URL'}
+                            />
+                          </div>
+                        )}
+                        {errors.imageUrl && <p className="text-sm text-red-600 mt-1">{errors.imageUrl}</p>}
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700">Price</label>
+                          <input
+                            className="input-field mt-1"
+                            type="number"
+                            min="0"
+                            step="0.01"
+                            value={formState.price}
+                            onChange={(e) => setFormState((prev) => ({ ...prev, price: e.target.value }))}
+                            required
+                          />
+                          {errors.price && <p className="text-sm text-red-600 mt-1">{errors.price}</p>}
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700">Category</label>
+                          <select
+                            className="input-field mt-1"
+                            value={formState.category}
+                            onChange={(e) => setFormState((prev) => ({ ...prev, category: e.target.value }))}
+                            required
+                          >
+                            <option value="">Select category</option>
+                            {categories.map((c) => (
+                              <option key={c} value={c} className="capitalize">
+                                {c}
+                              </option>
+                            ))}
+                          </select>
+                          {errors.category && <p className="text-sm text-red-600 mt-1">{errors.category}</p>}
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700">Description</label>
+                        <textarea
+                          className="input-field mt-1"
+                          rows="3"
+                          value={formState.description}
+                          onChange={(e) => setFormState((prev) => ({ ...prev, description: e.target.value }))}
+                          required
+                        />
+                        {errors.description && <p className="text-sm text-red-600 mt-1">{errors.description}</p>}
+                      </div>
+
+                      <div className="flex items-center gap-2 py-2">
+                        <input
+                          type="checkbox"
+                          id="isTemporarilyClosed"
+                          checked={formState.isTemporarilyClosed}
+                          onChange={(e) => setFormState((prev) => ({ ...prev, isTemporarilyClosed: e.target.checked }))}
+                          className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
+                        />
+                        <label htmlFor="isTemporarilyClosed" className="text-sm font-medium text-gray-700">
+                          Mark as Out of Stock
+                        </label>
+                      </div>
+
+                      <div className="flex gap-3 pt-2">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setFormState(emptyForm);
+                            setIsFormOpen(false);
+                          }}
+                          className="btn-secondary flex-1"
+                        >
+                          Cancel
+                        </button>
+                        <button type="submit" className="btn-primary flex-1">
+                          {formState.id ? 'Save Changes' : 'Create Product'}
+                        </button>
+                      </div>
+                    </form>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Product list */}
-            <section className="lg:col-span-2 space-y-6">
+            <section className="space-y-6">
+              <button
+                onClick={() => {
+                  setFormState(emptyForm);
+                  setIsFormOpen(true);
+                }}
+                className="w-full sm:w-auto py-2 px-6 btn-primary flex items-center justify-center gap-2 mb-4 shadow-lg shadow-primary-600/20"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
+                </svg>
+                Add New Product
+              </button>
+
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                 <div>
                   <h3 className="text-xl font-semibold text-gray-900">Products</h3>
@@ -342,8 +389,8 @@ export function AdminDashboard() {
                           <button
                             onClick={() => handleStockToggle(product)}
                             className={`px-4 py-2 rounded-lg font-medium text-sm transition-colors ${product.isTemporarilyClosed
-                                ? 'bg-amber-100 text-amber-700 hover:bg-amber-200'
-                                : 'bg-green-100 text-green-700 hover:bg-green-200'
+                              ? 'bg-amber-100 text-amber-700 hover:bg-amber-200'
+                              : 'bg-green-100 text-green-700 hover:bg-green-200'
                               }`}
                           >
                             {product.isTemporarilyClosed ? 'Closed' : 'Open'}

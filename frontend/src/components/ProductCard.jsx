@@ -162,7 +162,7 @@ export function ProductCard({ product, onEdit }) {
             loading="lazy"
           />
           {/* Category Badge */}
-          <div className="absolute top-2 right-2 px-3 py-1 bg-white/90 backdrop-blur-sm rounded-full text-xs font-semibold text-primary-600 capitalize">
+          <div className="absolute top-2 right-2 px-2 py-0.5 bg-white/90 backdrop-blur-sm rounded-full text-[10px] font-semibold text-primary-600 capitalize">
             {product.category}
           </div>
           {/* Out of Stock Overlay */}
@@ -176,9 +176,9 @@ export function ProductCard({ product, onEdit }) {
         </div>
 
         {/* Product Details */}
-        <div className="p-4 md:p-6 flex flex-col flex-grow">
+        <div className="p-4 flex flex-col flex-grow">
           <div className="mb-2">
-            <h3 className="text-xl font-bold text-gray-900 leading-tight">
+            <h3 className="text-lg font-bold text-gray-900 leading-tight">
               {product.title}
             </h3>
             {/* Rating Stars */}
@@ -207,13 +207,13 @@ export function ProductCard({ product, onEdit }) {
             </div>
           </div>
 
-          <p className="text-gray-600 text-sm mb-4 flex-grow line-clamp-3">
+          <p className="text-gray-600 text-xs mb-4 flex-grow line-clamp-3">
             {product.description}
           </p>
 
           {/* Price */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mt-auto">
-            <span className="text-xl md:text-2xl font-bold text-primary-600">
+            <span className="text-lg md:text-xl font-bold text-primary-600">
               ₹{product.price.toFixed(2)}
             </span>
 

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useProducts } from '../context/ProductsContext';
+import { useAuth } from '../context/AuthContext';
 import { ProductCard } from '../components/ProductCard';
 import { Link } from 'react-router-dom';
 
@@ -23,7 +24,8 @@ function OfferBanner() {
 }
 
 export function Home() {
-  const { products, getCategories } = useProducts();
+  const { products, getCategories, isLoading } = useProducts();
+  const { isAdmin } = useAuth();
   const [activeCategory, setActiveCategory] = useState('All');
   const categories = ['All', ...getCategories()];
 
@@ -43,6 +45,17 @@ export function Home() {
           <div className="w-full h-full flex items-center justify-center bg-primary-100 text-primary-600 font-bold">U</div>
         </div>
       </div>
+
+      {isAdmin && (
+        <div className="mb-6">
+          <Link
+            to="/admin"
+            className="w-full md:w-auto block md:inline-block text-center px-6 py-3 bg-secondary-600 text-white rounded-xl font-bold shadow-lg hover:bg-secondary-700 transition-transform transform hover:scale-105"
+          >
+            Go to Admin Dashboard
+          </Link>
+        </div>
+      )}
 
       <OfferBanner />
 
@@ -64,16 +77,44 @@ export function Home() {
         </div>
       </div>
 
-      {/* Section Title */}
-      <div className="flex justify-between items-end mb-6">
+      {/* Section Title & Filter */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end mb-6 gap-4">
         <h2 className="text-xl md:text-2xl font-bold text-gray-900">
           {activeCategory === 'All' ? 'Recommended for You' : `${activeCategory} Products`}
         </h2>
-        <span className="text-sm text-gray-500">{filteredProducts.length} items</span>
+
+        <div className="flex items-center gap-3 self-end">
+          <label className="text-sm text-gray-600 hidden sm:block">Filter:</label>
+          <select
+            value={activeCategory}
+            onChange={(e) => setActiveCategory(e.target.value)}
+            className="border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:ring-2 focus:ring-primary-500 outline-none bg-white min-w-[140px] capitalize"
+          >
+            {categories.map((c) => (
+              <option key={c} value={c} className="capitalize">
+                {c.charAt(0).toUpperCase() + c.slice(1)}
+              </option>
+            ))}
+          </select>
+          <span className="text-sm text-gray-500 whitespace-nowrap min-w-[60px] text-right">{filteredProducts.length} items</span>
+        </div>
       </div>
 
       {/* Product Grid */}
-      {filteredProducts.length > 0 ? (
+      {isLoading ? (
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+          {[...Array(8)].map((_, i) => (
+            <div key={i} className="bg-white rounded-xl shadow-sm border p-4 space-y-3 animate-pulse">
+              <div className="w-full h-40 bg-gray-200 rounded-lg"></div>
+              <div className="space-y-2">
+                <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+                <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+                <div className="h-4 bg-gray-200 rounded w-1/4 pt-4"></div>
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : filteredProducts.length > 0 ? (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
           {filteredProducts.map((product) => (
             <ProductCard key={product._id} product={product} />

@@ -1,7 +1,7 @@
-import { Suspense, lazy } from 'react';
+import { Suspense, lazy, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { Header } from './components/Header';
-import { Footer } from './components/Footer';
+
 import { AuthProvider } from './context/AuthContext';
 import { ProductsProvider, useProducts } from './context/ProductsContext';
 import { AdminGuard } from './components/AdminGuard';
@@ -16,17 +16,33 @@ const AdminLogin = lazy(() => import('./pages/AdminLogin').then(module => ({ def
 const AdminDashboard = lazy(() => import('./pages/AdminDashboard').then(module => ({ default: module.AdminDashboard })));
 
 /**
+ * Component that automatically scrolls the window to the top
+ * whenever the route pathname changes.
+ */
+function ScrollToTop() {
+  const { pathname } = useLocation();
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+
+  return null;
+}
+
+/**
  * Root application component
  * Sets up routing, global providers, and shared layout (Header/Footer)
  */
 function AppLayout() {
   const location = useLocation();
-  const showFooter = location.pathname !== '/admin/login';
-  const { isLoading } = useProducts();
 
-  if (isLoading) {
-    return <Loader />;
-  }
+  // Global loading check removed to improve TTI (Time to Interactive).
+  // Individual pages will handle their own data loading states.
+  // const { isLoading } = useProducts(); 
+
+  // if (isLoading) {
+  //   return <Loader />;
+  // }
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50 text-gray-900">
@@ -51,7 +67,7 @@ function AppLayout() {
         </Suspense>
       </main>
 
-      {showFooter && <Footer />}
+
       <PWAInstallPrompt />
     </div>
   );
@@ -62,6 +78,7 @@ export default function App() {
     <AuthProvider>
       <ProductsProvider>
         <BrowserRouter>
+          <ScrollToTop />
           <AppLayout />
         </BrowserRouter>
       </ProductsProvider>

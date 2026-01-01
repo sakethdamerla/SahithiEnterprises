@@ -2,14 +2,15 @@ import { useParams, Link, useSearchParams, useNavigate } from 'react-router-dom'
 import { ProductCard } from '../components/ProductCard';
 import { useProducts } from '../context/ProductsContext';
 import { useState } from 'react';
+import { getCategoryInfo } from '../utils/categoryData.jsx';
+import { Loader } from '../components/Loader';
 
 /**
  * Category page component that displays products for a specific category
- * Includes pagination support for large product lists
  */
 export function Category() {
   const { slug } = useParams();
-  const { getProductsByCategory } = useProducts();
+  const { getProductsByCategory, isLoading } = useProducts();
   const navigate = useNavigate();
   const [currentPage, setCurrentPage] = useState(1);
   const productsPerPage = 6;
@@ -35,41 +36,26 @@ export function Category() {
     navigate(`/admin?edit=${product._id}`);
   };
 
-  // Category metadata
-  const categoryInfo = {
-    electronics: {
-      title: 'Electronics',
-      description: 'Smart home appliances and climate comfort tech',
-      icon: '🏠',
-    },
-    tyres: {
-      title: 'Tyres',
-      description: 'Performance and all-season tyres for every vehicle type',
-      icon: '🛞',
-    },
-    power: {
-      title: 'Inverters & Batteries',
-      description: 'Reliable backup power solutions for homes and offices',
-      icon: '🔋',
-    },
-  };
+  const info = getCategoryInfo(slug);
 
-  const info = categoryInfo[slug] || {
-    title: slug,
-    description: `Browse our ${slug} collection`,
-    icon: '📦',
-  };
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center min-h-[50vh]">
+        <Loader />
+      </div>
+    );
+  }
 
   if (categoryProducts.length === 0) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center">
+      <div className="mt-40 flex flex-col items-center justify-center">
         <div className="text-center">
-          <div className="text-6xl mb-4">📦</div>
-          <h2 className="text-3xl font-bold text-gray-900 mb-2">No Products Found</h2>
-          <p className="text-gray-600 mb-6">
+          <div className="text-2xl mb-4">📦</div>
+          <h2 className="text-xl font-bold text-gray-900 mb-2">No Products Found</h2>
+          <p className="text-gray-600 mb-6 text-sm">
             There are no products in the "{slug}" category yet.
           </p>
-          <Link to="/" className="btn-primary">
+          <Link to="/" className="btn-primary text-sm">
             Back to Home
           </Link>
         </div>
@@ -80,40 +66,32 @@ export function Category() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Category Header */}
-      <section className="bg-gradient-to-r from-primary-600 to-secondary-600 text-white py-16">
-        <div className="container mx-auto px-4">
-          <div className="flex items-center justify-center mb-4">
-            <span className="text-6xl mr-4">{info.icon}</span>
-            <h1 className="text-5xl font-bold">{info.title}</h1>
+
+
+
+
+      {/* Compact Header */}
+      <div className="container mx-auto px-4 py-4 md:py-6">
+        <div className="flex items-center space-x-3 md:space-x-4">
+          <div className="w-10 h-10 md:w-16 md:h-16 bg-white rounded-full flex items-center justify-center text-xl md:text-4xl shadow-sm border border-gray-100 shrink-0">
+            {info.icon}
           </div>
-          <p className="text-xl text-center text-gray-100 max-w-2xl mx-auto">
-            {info.description}
-          </p>
-          <div className="text-center mt-4">
-            <span className="inline-block px-4 py-2 bg-white/20 backdrop-blur-sm rounded-full text-sm font-semibold">
-              {categoryProducts.length} {categoryProducts.length === 1 ? 'Product' : 'Products'} Available
+          <div className="flex-grow">
+            <h1 className="text-lg md:text-3xl font-bold text-gray-900 leading-tight">{info.title}</h1>
+            <p className="text-gray-500 text-xs md:text-base hidden sm:block mt-1">{info.description}</p>
+          </div>
+          <div className="shrink-0">
+            <span className="text-[10px] md:text-sm text-gray-500 bg-white border border-gray-200 px-2 py-1 rounded-full whitespace-nowrap">
+              {categoryProducts.length} <span className="hidden sm:inline">items</span>
             </span>
           </div>
-        </div>
-      </section>
-
-      {/* Breadcrumb */}
-      <div className="bg-white border-b">
-        <div className="container mx-auto px-4 py-4">
-          <nav className="flex items-center space-x-2 text-sm" aria-label="Breadcrumb">
-            <Link to="/" className="text-primary-600 hover:text-primary-700 transition-colors">
-              Home
-            </Link>
-            <span className="text-gray-400">/</span>
-            <span className="text-gray-700 font-medium capitalize">{slug}</span>
-          </nav>
         </div>
       </div>
 
       {/* Products Grid */}
-      <section className="py-12">
-        <div className="container mx-auto px-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+      <section className="pb-12 px-2 md:px-0">
+        <div className="container mx-auto px-2 md:px-4">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-6">
             {currentProducts.map((product) => (
               <ProductCard key={product._id} product={product} onEdit={handleEdit} />
             ))}

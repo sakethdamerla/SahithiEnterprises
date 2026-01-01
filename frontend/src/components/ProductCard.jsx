@@ -8,7 +8,7 @@ import { useAuth } from '../context/AuthContext';
  * @param {Object} props.product - Product object
  * @param {Function} props.onEdit - Optional callback for edit action
  */
-export function ProductCard({ product, onEdit }) {
+export function ProductCard({ product, onEdit, onDelete, onToggleStock }) {
   const { isAdmin } = useAuth();
   const [showInput, setShowInput] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -140,7 +140,7 @@ export function ProductCard({ product, onEdit }) {
         className={`card overflow-hidden flex flex-col h-full cursor-pointer group ${product.isTemporarilyClosed ? 'opacity-75 grayscale-[0.5]' : ''}`}
       >
         {/* Product Image */}
-        <div className="relative h-48 md:h-64 overflow-hidden bg-gray-200">
+        <div className="relative h-32 md:h-48 overflow-hidden bg-gray-200">
           {!imageLoaded && (
             <div className="absolute inset-0 bg-gray-200 animate-pulse flex items-center justify-center text-gray-400">
               <svg className="w-10 h-10 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -162,13 +162,13 @@ export function ProductCard({ product, onEdit }) {
             loading="lazy"
           />
           {/* Category Badge */}
-          <div className="absolute top-2 right-2 px-2 py-0.5 bg-white/90 backdrop-blur-sm rounded-full text-[10px] font-semibold text-primary-600 capitalize">
+          <div className="absolute top-2 right-2 px-2 py-0.5 bg-white/90 backdrop-blur-sm rounded-full text-[8px] md:text-[10px] font-semibold text-primary-600 capitalize">
             {product.category}
           </div>
           {/* Out of Stock Overlay */}
           {product.isTemporarilyClosed && (
             <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-              <span className="bg-red-600 text-white px-4 py-2 rounded-lg font-bold uppercase tracking-wider text-sm shadow-lg transform -rotate-12 border-2 border-white">
+              <span className="bg-red-600 text-white px-2 py-1 md:px-4 md:py-2 rounded-lg font-bold uppercase tracking-wider text-[10px] md:text-sm shadow-lg transform -rotate-12 border-2 border-white">
                 Out of Stock
               </span>
             </div>
@@ -176,13 +176,13 @@ export function ProductCard({ product, onEdit }) {
         </div>
 
         {/* Product Details */}
-        <div className="p-4 flex flex-col flex-grow">
-          <div className="mb-2">
-            <h3 className="text-lg font-bold text-gray-900 leading-tight">
+        <div className="p-2 md:p-4 flex flex-col flex-grow">
+          <div className="mb-1 md:mb-2">
+            <h3 className="text-sm md:text-lg font-bold text-gray-900 leading-tight line-clamp-2">
               {product.title}
             </h3>
             {/* Rating Stars */}
-            <div className="mt-2">
+            <div className="mt-1 md:mt-2">
               <div className="flex items-center gap-1">
                 {[1, 2, 3, 4, 5].map((star) => (
                   <button
@@ -192,7 +192,7 @@ export function ProductCard({ product, onEdit }) {
                     onMouseEnter={() => setHoverRating(star)}
                     onMouseLeave={() => setHoverRating(0)}
                     disabled={isAdmin || ratingLoading}
-                    className={`text-xl focus:outline-none transition-colors ${(hoverRating || userRating) >= star
+                    className={`text-base md:text-xl focus:outline-none transition-colors ${(hoverRating || userRating) >= star
                       ? 'text-yellow-400'
                       : 'text-gray-300'
                       }`}
@@ -201,31 +201,53 @@ export function ProductCard({ product, onEdit }) {
                   </button>
                 ))}
               </div>
-              <div className="text-xs text-gray-500 font-medium mt-0.5">
+              <div className="text-[10px] md:text-xs text-gray-500 font-medium mt-0.5">
                 {averageRating > 0 ? `(${averageRating})` : '(No ratings yet)'} • {ratings.length} {ratings.length === 1 ? 'rating' : 'ratings'}
               </div>
             </div>
           </div>
 
-          <p className="text-gray-600 text-xs mb-4 flex-grow line-clamp-3">
+          <p className="text-gray-600 text-[10px] md:text-xs mb-2 md:mb-4 flex-grow line-clamp-2 md:line-clamp-3">
             {product.description}
           </p>
 
           {/* Price */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mt-auto">
-            <span className="text-lg md:text-xl font-bold text-primary-600">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 md:gap-3 mt-auto">
+            <span className="text-base md:text-xl font-bold text-primary-600">
               ₹{product.price.toFixed(2)}
             </span>
 
-            {/* Admin Edit Button */}
-            {isAdmin && onEdit && (
-              <button
-                onClick={() => onEdit(product)}
-                className="px-4 py-2 bg-secondary-600 text-white rounded-lg hover:bg-secondary-700 transition-colors font-medium text-sm focus:outline-none focus:ring-2 focus:ring-secondary-500 focus:ring-offset-2"
-                aria-label={`Edit ${product.title}`}
-              >
-                Edit
-              </button>
+            {/* Admin Actions */}
+            {isAdmin && (
+              <div className="flex flex-wrap gap-1 md:gap-2 justify-end w-full sm:w-auto">
+                {onToggleStock && (
+                  <button
+                    onClick={(e) => { e.stopPropagation(); onToggleStock(product); }}
+                    className={`px-2 py-1 rounded-md text-xs font-semibold md:text-xs transition-colors ${product.isTemporarilyClosed
+                      ? 'bg-amber-100 text-amber-700 hover:bg-amber-200'
+                      : 'bg-green-100 text-green-700 hover:bg-green-200'
+                      }`}
+                  >
+                    {product.isTemporarilyClosed ? 'Closed' : 'Open'}
+                  </button>
+                )}
+                {onEdit && (
+                  <button
+                    onClick={(e) => { e.stopPropagation(); onEdit(product); }}
+                    className="px-2 py-1 bg-blue-50 text-blue-600 rounded-md hover:bg-blue-100 text-xs font-semibold md:text-xs transition-colors"
+                  >
+                    Edit
+                  </button>
+                )}
+                {onDelete && (
+                  <button
+                    onClick={(e) => { e.stopPropagation(); onDelete(product._id); }}
+                    className="px-2 py-1 bg-red-50 text-red-600 rounded-md hover:bg-red-100 text-xs font-semibold md:text-xs transition-colors"
+                  >
+                    Delete
+                  </button>
+                )}
+              </div>
             )}
 
             {/* Regular User Interaction */}
@@ -234,7 +256,7 @@ export function ProductCard({ product, onEdit }) {
                 <button
                   onClick={handleInterested}
                   disabled={loading || isInterestSubmitted || product.isTemporarilyClosed}
-                  className={`w-full sm:w-auto px-4 py-2 text-white rounded-lg font-medium text-sm focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors
+                  className={`w-full sm:w-auto px-2 py-1.5 md:px-4 md:py-2 text-white rounded-lg font-medium text-xs md:text-sm focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors
                     ${product.isTemporarilyClosed
                       ? 'bg-gray-400 cursor-not-allowed'
                       : 'bg-primary-600 hover:bg-primary-700 focus:ring-primary-500'
@@ -247,7 +269,7 @@ export function ProductCard({ product, onEdit }) {
                       : loading
                         ? (
                           <span className="flex items-center gap-2">
-                            <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <svg className="animate-spin h-3 w-3 md:h-4 md:w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                               <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                               <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                             </svg>
@@ -338,82 +360,78 @@ export function ProductCard({ product, onEdit }) {
 
       {/* Full Details Popup Modal */}
       {showDetails && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-200">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto flex flex-col md:flex-row">
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-200" onClick={() => setShowDetails(false)}>
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm overflow-hidden flex flex-col transform transition-all scale-100" onClick={e => e.stopPropagation()}>
             {/* Close Button */}
             <button
               onClick={() => setShowDetails(false)}
-              className="absolute top-4 right-4 z-10 bg-white/50 hover:bg-white text-gray-800 rounded-full p-2 transition-colors"
+              className="absolute top-2 right-2 z-10 bg-black/20 hover:bg-black/40 text-white rounded-full p-1.5 transition-colors backdrop-blur-sm"
             >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
             </button>
 
-            {/* Large Image */}
-            <div className="w-full md:w-1/2 h-64 md:h-auto bg-gray-100 relative">
+            {/* Image Area */}
+            <div className="w-full h-48 bg-gray-100 relative shrink-0">
               <img
                 src={product.imageUrl}
                 alt={product.title}
                 onError={(e) => { if (e.target.src !== fallback) e.target.src = fallback; }}
                 className="w-full h-full object-cover"
               />
-              {/* Out of Stock Overlay */}
+              <div className="absolute top-2 left-2 px-2 py-0.5 bg-white/90 backdrop-blur-sm rounded-full text-[10px] font-bold text-primary-600 uppercase tracking-wide">
+                {product.category}
+              </div>
               {product.isTemporarilyClosed && (
                 <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                  <span className="bg-red-600 text-white px-4 py-2 rounded-lg font-bold uppercase tracking-wider text-sm shadow-lg transform -rotate-12 border-2 border-white">
+                  <span className="bg-red-600 text-white px-3 py-1 rounded font-bold uppercase text-xs shadow-lg transform -rotate-12 border border-white">
                     Out of Stock
                   </span>
                 </div>
               )}
             </div>
 
-            {/* Details Content */}
-            <div className="w-full md:w-1/2 p-6 md:p-8 flex flex-col">
-              <div className="flex-grow">
-                <span className="inline-block px-3 py-1 bg-primary-50 text-primary-700 rounded-full text-xs font-semibold uppercase tracking-wide mb-3">
-                  {product.category}
+            {/* Content Area */}
+            <div className="p-5 flex flex-col h-auto">
+              <h2 className="text-xl font-bold text-gray-900 leading-tight mb-1">
+                {product.title}
+              </h2>
+
+              {/* Rating */}
+              <div className="flex items-center gap-1 mb-3">
+                <span className="text-yellow-400 text-base">★</span>
+                <span className="text-xs font-bold text-gray-700">
+                  {averageRating > 0 ? averageRating : '0.0'}
                 </span>
-                <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
-                  {product.title}
-                </h2>
-
-                {/* Rating in Modal */}
-                <div className="mb-4">
-                  <div className="flex items-center gap-1">
-                    <span className="text-yellow-400 text-2xl">★</span>
-                    <span className="font-bold text-gray-900 text-lg">
-                      {averageRating > 0 ? `(${averageRating})` : '(0.0)'}
-                    </span>
-                  </div>
-                  <div className="text-gray-500 text-sm mt-1">
-                    {ratings.length} {ratings.length === 1 ? 'rating' : 'ratings'}
-                  </div>
-                </div>
-
-                <div className="text-3xl font-bold text-primary-600 mb-6">
-                  ₹{product.price.toFixed(2)}
-                </div>
-                <div className="prose prose-sm text-gray-600 mb-8 max-w-none">
-                  <p className="whitespace-pre-line">{product.description}</p>
-                </div>
+                <span className="text-[10px] text-gray-400">
+                  ({ratings.length} ratings)
+                </span>
               </div>
 
-              {/* Action Bar in Modal */}
+              <div className="text-2xl font-bold text-primary-600 mb-2">
+                ₹{product.price.toFixed(2)}
+              </div>
+
+              <div className="prose prose-sm text-gray-600 text-xs mb-4 line-clamp-4 leading-relaxed">
+                {product.description}
+              </div>
+
+              {/* Action Button */}
               {!isAdmin && (
-                <div className="mt-auto pt-6 border-t">
+                <div className="mt-auto pt-2">
                   <button
                     onClick={handleInterestedClickFromDetails}
                     disabled={isInterestSubmitted || product.isTemporarilyClosed}
-                    className={`w-full py-3 rounded-xl transition-all font-semibold text-lg shadow-lg active:scale-95 ${product.isTemporarilyClosed
+                    className={`w-full py-2.5 rounded-xl transition-all font-semibold text-sm shadow-md active:scale-95 ${product.isTemporarilyClosed
                       ? 'bg-gray-400 cursor-not-allowed'
                       : isInterestSubmitted
-                        ? 'bg-green-600 text-white shadow-green-600/30 cursor-not-allowed opacity-90'
-                        : 'bg-primary-600 text-white hover:bg-primary-700 shadow-primary-600/30'
+                        ? 'bg-green-600 text-white opacity-90'
+                        : 'bg-primary-600 text-white hover:bg-primary-700'
                       }`}
                   >
                     {product.isTemporarilyClosed ? 'Out of Stock' : (isInterestSubmitted ? 'Response Recorded ✓' : "I'm Interested")}
                   </button>
                   {!product.isTemporarilyClosed && (
-                    <p className="text-center text-xs text-gray-500 mt-2">
+                    <p className="text-center text-[10px] text-gray-400 mt-2">
                       Click to share your details with us
                     </p>
                   )}

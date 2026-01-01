@@ -29,11 +29,11 @@ export function AdminLogin() {
 
   return (
     <div className="min-h-[80vh] flex items-center justify-center bg-gray-50/50 px-4 sm:px-6 lg:px-8">
-      <div className="w-full max-w-sm space-y-8">
+      <div className="w-full max-w-xs sm:max-w-sm space-y-6 sm:space-y-8">
 
         {/* Minimal Header */}
         <div className="text-center">
-          <div className="mx-auto h-12 w-12 bg-primary-600 rounded-xl flex items-center justify-center shadow-lg transform rotate-3 mb-6">
+          <div className="mx-auto h-10 w-10 bg-primary-600 rounded-xl flex items-center justify-center shadow-lg transform rotate-3 mb-4 sm:mb-6">
             <svg
               className="h-6 w-6 text-white"
               fill="none"
@@ -43,16 +43,16 @@ export function AdminLogin() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
             </svg>
           </div>
-          <h2 className="text-3xl font-extrabold tracking-tight text-gray-900">
+          <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-gray-900">
             Admin Access
           </h2>
-          <p className="mt-2 text-sm text-gray-500">
+          <p className="mt-2 text-xs sm:text-sm text-gray-500">
             Please sign in to manage the platform
           </p>
         </div>
 
         {/* Login Card */}
-        <div className="bg-white py-8 px-4 shadow-xl shadow-gray-100 sm:rounded-2xl sm:px-10 border border-gray-100">
+        <div className="bg-white py-6 px-4 sm:py-8 sm:px-10 shadow-xl shadow-gray-100 rounded-2xl border border-gray-100">
           <form className="space-y-6" onSubmit={handleSubmit}>
             <div>
               <label htmlFor="username" className="block text-sm font-medium text-gray-700">

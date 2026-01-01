@@ -43,6 +43,24 @@ export function AdminDashboard() {
   const [interests, setInterests] = useState([]);
   const [dateFilter, setDateFilter] = useState('today');
 
+  useEffect(() => {
+    const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+    fetch(`${API_URL}/interests`)
+      .then(res => {
+        if (!res.ok) throw new Error('Failed to fetch interests');
+        return res.json();
+      })
+      .then(data => {
+        if (Array.isArray(data)) {
+          setInterests(data);
+        } else {
+          console.error('Invalid interests data:', data);
+          setInterests([]);
+        }
+      })
+      .catch(err => console.error(err));
+  }, []);
+
   const filteredInterests = useMemo(() => {
     if (!interests.length) return [];
 
@@ -65,23 +83,24 @@ export function AdminDashboard() {
     });
   }, [interests, dateFilter]);
 
+  // Pagination state for Interested Users
+  const [interestPage, setInterestPage] = useState(1);
+  const INTERESTS_PER_PAGE = 10;
+
+  // Reset page when filter results change
   useEffect(() => {
-    const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
-    fetch(`${API_URL}/interests`)
-      .then(res => {
-        if (!res.ok) throw new Error('Failed to fetch interests');
-        return res.json();
-      })
-      .then(data => {
-        if (Array.isArray(data)) {
-          setInterests(data);
-        } else {
-          console.error('Invalid interests data:', data);
-          setInterests([]);
-        }
-      })
-      .catch(err => console.error(err));
-  }, []);
+    setInterestPage(1);
+  }, [dateFilter, interests.length]);
+
+  const { paginatedInterests, totalInterestPages } = useMemo(() => {
+    const totalPages = Math.ceil(filteredInterests.length / INTERESTS_PER_PAGE);
+    const start = (interestPage - 1) * INTERESTS_PER_PAGE;
+    const end = start + INTERESTS_PER_PAGE;
+    return {
+      paginatedInterests: filteredInterests.slice(start, end),
+      totalInterestPages: totalPages
+    };
+  }, [filteredInterests, interestPage]);
 
   // If navigated with ?edit=ID, prefill the form
   useEffect(() => {
@@ -97,10 +116,6 @@ export function AdminDashboard() {
 
   const validate = () => {
     const nextErrors = {};
-    if (!formState.title.trim()) nextErrors.title = 'Title is required';
-    if (!formState.description.trim()) nextErrors.description = 'Description is required';
-    if (!formState.title.trim()) nextErrors.title = 'Title is required';
-    if (!formState.description.trim()) nextErrors.description = 'Description is required';
     if (!formState.title.trim()) nextErrors.title = 'Title is required';
     if (!formState.description.trim()) nextErrors.description = 'Description is required';
     if (!formState.imageUrl.trim() && !selectedFile) nextErrors.imageUrl = 'Image is required';
@@ -129,8 +144,6 @@ export function AdminDashboard() {
   };
 
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  // ... (existing hooks)
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -175,8 +188,6 @@ export function AdminDashboard() {
     }
   };
 
-
-
   const handleEdit = (product) => {
     setFormState({
       id: product._id,
@@ -192,9 +203,11 @@ export function AdminDashboard() {
   };
 
   const handleDelete = (id) => {
-    deleteProduct(id);
-    if (formState.id === id) {
-      setFormState(emptyForm);
+    if (window.confirm('Are you sure you want to delete this product?')) {
+      deleteProduct(id);
+      if (formState.id === id) {
+        setFormState(emptyForm);
+      }
     }
   };
 
@@ -213,19 +226,16 @@ export function AdminDashboard() {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="bg-white border-b">
-        <div className="container mx-auto px-4 py-6">
-          <div className="flex flex-col gap-1 mb-6">
-            <p className="text-sm text-gray-500">Admin Dashboard</p>
-            <h1 className="text-3xl font-bold text-gray-900">Overview</h1>
-            <p className="text-sm text-gray-600">
-              Signed in as {adminUser?.username ?? 'admin'}
-            </p>
+        <div className="container mx-auto px-4 py-4 md:py-6">
+          <div className="flex flex-col gap-1 mb-4 md:mb-6">
+            <p className="text-xs md:text-sm text-gray-500">Admin Dashboard</p>
+            <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Overview</h1>
           </div>
 
-          <div className="flex gap-4 border-b border-gray-100">
+          <div className="flex gap-4 border-b border-gray-100 overflow-x-auto">
             <button
               onClick={() => setActiveView('products')}
-              className={`pb-3 px-1 text-sm font-medium transition-colors relative ${activeView === 'products'
+              className={`pb-2 md:pb-3 px-1 text-sm font-medium transition-colors relative whitespace-nowrap ${activeView === 'products'
                 ? 'text-primary-600 border-b-2 border-primary-600'
                 : 'text-gray-500 hover:text-gray-700'
                 }`}
@@ -234,7 +244,7 @@ export function AdminDashboard() {
             </button>
             <button
               onClick={() => setActiveView('interests')}
-              className={`pb-3 px-1 text-sm font-medium transition-colors relative ${activeView === 'interests'
+              className={`pb-2 md:pb-3 px-1 text-sm font-medium transition-colors relative whitespace-nowrap ${activeView === 'interests'
                 ? 'text-primary-600 border-b-2 border-primary-600'
                 : 'text-gray-500 hover:text-gray-700'
                 }`}
@@ -245,17 +255,19 @@ export function AdminDashboard() {
         </div>
       </div>
 
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 py-6 md:py-8">
         {activeView === 'products' ? (
           <div>
+            {/* ... (Product Management Code - mostly unchanged, just ensured responsive wrappers) */}
             {/* Form Modal */}
             {isFormOpen && (
               <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
                 <div className="bg-white rounded-xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto flex flex-col">
-                  <div className="p-6 border-b flex justify-between items-center sticky top-0 bg-white z-10">
+                  {/* ... Header ... */}
+                  <div className="p-4 md:p-6 border-b flex justify-between items-center sticky top-0 bg-white z-10">
                     <div>
-                      <h2 className="text-xl font-bold text-gray-900">{formState.id ? 'Edit Product' : 'Add New Product'}</h2>
-                      <p className="text-sm text-gray-500">Enter product details below</p>
+                      <h2 className="text-lg md:text-xl font-bold text-gray-900">{formState.id ? 'Edit Product' : 'Add New Product'}</h2>
+                      <p className="text-xs md:text-sm text-gray-500">Enter product details below</p>
                     </div>
                     <button
                       onClick={() => setIsFormOpen(false)}
@@ -267,24 +279,24 @@ export function AdminDashboard() {
                     </button>
                   </div>
 
-                  <div className="p-6">
-                    <form onSubmit={handleSubmit} className="space-y-4">
+                  <div className="p-4 md:p-6">
+                    <form onSubmit={handleSubmit} className="space-y-3 md:space-y-4">
                       <div>
-                        <label className="block text-sm font-medium text-gray-700">Title</label>
+                        <label className="block text-xs md:text-sm font-medium text-gray-700">Title</label>
                         <input
-                          className="input-field mt-1"
+                          className="input-field mt-1 text-sm py-1.5"
                           value={formState.title}
                           onChange={(e) => setFormState((prev) => ({ ...prev, title: e.target.value }))}
                           required
                         />
-                        {errors.title && <p className="text-sm text-red-600 mt-1">{errors.title}</p>}
+                        {errors.title && <p className="text-xs text-red-600 mt-1">{errors.title}</p>}
                       </div>
 
                       <div>
-                        <label className="block text-sm font-medium text-gray-700">Product Image</label>
+                        <label className="block text-xs md:text-sm font-medium text-gray-700">Product Image</label>
                         <div className="mt-1 space-y-2">
                           {formState.imageUrl && !selectedFile && (
-                            <div className="relative w-full h-40 bg-gray-100 rounded-lg overflow-hidden border">
+                            <div className="relative w-full h-32 md:h-40 bg-gray-100 rounded-lg overflow-hidden border">
                               <img
                                 src={formState.imageUrl}
                                 alt="Current product"
@@ -302,13 +314,12 @@ export function AdminDashboard() {
                             </div>
                           )}
                           <div className="flex items-center justify-center w-full">
-                            <label htmlFor="dropzone-file" className="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100">
+                            <label htmlFor="dropzone-file" className="flex flex-col items-center justify-center w-full h-24 md:h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100">
                               <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                                <svg className="w-8 h-8 mb-4 text-gray-500" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 16">
+                                <svg className="w-6 h-6 md:w-8 md:h-8 mb-3 text-gray-500" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 16">
                                   <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2" />
                                 </svg>
-                                <p className="mb-2 text-sm text-gray-500"><span className="font-semibold">{selectedFile ? selectedFile.name : 'Click to upload'}</span> or drag and drop</p>
-                                <p className="text-xs text-gray-500">SVG, PNG, JPG or GIF</p>
+                                <p className="mb-1 text-xs text-gray-500"><span className="font-semibold">{selectedFile ? selectedFile.name : 'Click to upload'}</span></p>
                               </div>
                               <input
                                 id="dropzone-file"
@@ -324,14 +335,14 @@ export function AdminDashboard() {
                             </label>
                           </div>
                         </div>
-                        {errors.imageUrl && <p className="text-sm text-red-600 mt-1">{errors.imageUrl}</p>}
+                        {errors.imageUrl && <p className="text-xs text-red-600 mt-1">{errors.imageUrl}</p>}
                       </div>
 
-                      <div className="grid grid-cols-2 gap-4">
+                      <div className="grid grid-cols-2 gap-3 md:gap-4">
                         <div>
-                          <label className="block text-sm font-medium text-gray-700">Price</label>
+                          <label className="block text-xs md:text-sm font-medium text-gray-700">Price</label>
                           <input
-                            className="input-field mt-1"
+                            className="input-field mt-1 text-sm py-1.5"
                             type="number"
                             min="0"
                             step="0.01"
@@ -339,13 +350,13 @@ export function AdminDashboard() {
                             onChange={(e) => setFormState((prev) => ({ ...prev, price: e.target.value }))}
                             required
                           />
-                          {errors.price && <p className="text-sm text-red-600 mt-1">{errors.price}</p>}
+                          {errors.price && <p className="text-xs text-red-600 mt-1">{errors.price}</p>}
                         </div>
 
                         <div>
-                          <label className="block text-sm font-medium text-gray-700">Category</label>
+                          <label className="block text-xs md:text-sm font-medium text-gray-700">Category</label>
                           <select
-                            className="input-field mt-1"
+                            className="input-field mt-1 text-sm py-1.5"
                             value={formState.category}
                             onChange={(e) => setFormState((prev) => ({ ...prev, category: e.target.value }))}
                             required
@@ -357,20 +368,20 @@ export function AdminDashboard() {
                               </option>
                             ))}
                           </select>
-                          {errors.category && <p className="text-sm text-red-600 mt-1">{errors.category}</p>}
+                          {errors.category && <p className="text-xs text-red-600 mt-1">{errors.category}</p>}
                         </div>
                       </div>
 
                       <div>
-                        <label className="block text-sm font-medium text-gray-700">Description</label>
+                        <label className="block text-xs md:text-sm font-medium text-gray-700">Description</label>
                         <textarea
-                          className="input-field mt-1"
+                          className="input-field mt-1 text-sm py-1.5"
                           rows="3"
                           value={formState.description}
                           onChange={(e) => setFormState((prev) => ({ ...prev, description: e.target.value }))}
                           required
                         />
-                        {errors.description && <p className="text-sm text-red-600 mt-1">{errors.description}</p>}
+                        {errors.description && <p className="text-xs text-red-600 mt-1">{errors.description}</p>}
                       </div>
 
                       <div className="flex items-center gap-2 py-2">
@@ -381,7 +392,7 @@ export function AdminDashboard() {
                           onChange={(e) => setFormState((prev) => ({ ...prev, isTemporarilyClosed: e.target.checked }))}
                           className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
                         />
-                        <label htmlFor="isTemporarilyClosed" className="text-sm font-medium text-gray-700">
+                        <label htmlFor="isTemporarilyClosed" className="text-xs md:text-sm font-medium text-gray-700">
                           Mark as Out of Stock
                         </label>
                       </div>
@@ -394,27 +405,17 @@ export function AdminDashboard() {
                             setSelectedFile(null);
                             setIsFormOpen(false);
                           }}
-                          className="btn-secondary flex-1"
+                          className="btn-secondary flex-1 text-xs md:text-sm py-2"
                           disabled={isSubmitting}
                         >
                           Cancel
                         </button>
                         <button
                           type="submit"
-                          className="btn-primary flex-1 flex items-center justify-center gap-2"
+                          className="btn-primary flex-1 flex items-center justify-center gap-2 text-xs md:text-sm py-2"
                           disabled={isSubmitting}
                         >
-                          {isSubmitting ? (
-                            <>
-                              <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                              </svg>
-                              Processing...
-                            </>
-                          ) : (
-                            formState.id ? 'Save Changes' : 'Create Product'
-                          )}
+                          {isSubmitting ? 'Processing...' : (formState.id ? 'Save Changes' : 'Create Product')}
                         </button>
                       </div>
                     </form>
@@ -424,14 +425,14 @@ export function AdminDashboard() {
             )}
 
             {/* Product list */}
-            <section className="space-y-6">
+            <section className="space-y-4 md:space-y-6">
               <button
                 onClick={() => {
                   setFormState(emptyForm);
                   setSelectedFile(null);
                   setIsFormOpen(true);
                 }}
-                className="w-full sm:w-auto py-2 px-6 btn-primary flex items-center justify-center gap-2 mb-4 shadow-lg shadow-primary-600/20"
+                className="w-full sm:w-auto py-2 px-6 btn-primary flex items-center justify-center gap-2 mb-4 shadow-lg shadow-primary-600/20 text-sm font-medium"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                   <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
@@ -441,8 +442,8 @@ export function AdminDashboard() {
 
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                 <div>
-                  <h3 className="text-xl font-semibold text-gray-900">Products</h3>
-                  <p className="text-sm text-gray-600">
+                  <h3 className="text-lg md:text-xl font-semibold text-gray-900">Products</h3>
+                  <p className="text-xs md:text-sm text-gray-600">
                     {filteredProducts.length} item(s) • Stored in Database
                   </p>
                 </div>
@@ -450,7 +451,7 @@ export function AdminDashboard() {
                   <label className="text-sm text-gray-700" htmlFor="filter">Filter by category:</label>
                   <select
                     id="filter"
-                    className="input-field"
+                    className="input-field py-1 text-sm"
                     value={filter}
                     onChange={(e) => setFilter(e.target.value)}
                   >
@@ -470,34 +471,15 @@ export function AdminDashboard() {
                     No products match this filter.
                   </div>
                 ) : (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
                     {filteredProducts.map((product) => (
-                      <div key={product._id} className="flex flex-col h-full bg-white rounded-lg border shadow-sm p-4 relative">
-                        <ProductCard product={product} />
-
-                        <div className="mt-auto pt-4 flex justify-end gap-2 border-t border-gray-100">
-                          <button
-                            onClick={() => handleStockToggle(product)}
-                            className={`px-4 py-2 rounded-lg font-medium text-sm transition-colors ${product.isTemporarilyClosed
-                              ? 'bg-amber-100 text-amber-700 hover:bg-amber-200'
-                              : 'bg-green-100 text-green-700 hover:bg-green-200'
-                              }`}
-                          >
-                            {product.isTemporarilyClosed ? 'Closed' : 'Open'}
-                          </button>
-                          <button
-                            onClick={() => handleEdit(product)}
-                            className="btn-secondary"
-                          >
-                            Edit
-                          </button>
-                          <button
-                            onClick={() => handleDelete(product._id)}
-                            className="btn-danger"
-                          >
-                            Delete
-                          </button>
-                        </div>
+                      <div key={product._id} className="h-full">
+                        <ProductCard
+                          product={product}
+                          onEdit={handleEdit}
+                          onDelete={handleDelete}
+                          onToggleStock={handleStockToggle}
+                        />
                       </div>
                     ))}
                   </div>
@@ -507,10 +489,10 @@ export function AdminDashboard() {
           </div>
         ) : (
           <div className="container mx-auto pb-10">
-            <section className="bg-white rounded-xl shadow-sm border p-6">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-xl font-bold">Interested Users</h2>
-                <div className="flex items-center gap-2">
+            <section className="bg-white rounded-xl shadow-sm border p-4 md:p-6">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
+                <h2 className="text-lg md:text-xl font-bold">Interested Users</h2>
+                <div className="flex items-center gap-2 self-start sm:self-auto">
                   <label htmlFor="interest-filter" className="text-sm text-gray-600 font-medium">Date:</label>
                   <select
                     id="interest-filter"
@@ -526,24 +508,23 @@ export function AdminDashboard() {
               </div>
 
               {/* Mobile Card View for Interests */}
-              <div className="md:hidden space-y-4">
-                {filteredInterests.length === 0 ? (
+              <div className="md:hidden space-y-3">
+                {paginatedInterests.length === 0 ? (
                   <p className="text-center text-sm text-gray-500 py-4">No interests found for this date range.</p>
                 ) : (
-                  filteredInterests.map((interest) => (
-                    <div key={interest._id} className="bg-gray-50 p-4 rounded-lg border border-gray-100 shadow-sm">
+                  paginatedInterests.map((interest) => (
+                    <div key={interest._id} className="bg-gray-50 p-3 rounded-lg border border-gray-100 shadow-sm">
                       <div className="flex justify-between items-start mb-2">
                         <div>
-                          <span className="font-semibold text-gray-900">{interest.username}</span>
-                          <div className="text-xs text-gray-500">{new Date(interest.date).toLocaleDateString()}</div>
+                          <span className="font-semibold text-gray-900 text-sm">{interest.username}</span>
+                          <div className="text-[10px] text-gray-500">{new Date(interest.date).toLocaleDateString()}</div>
                         </div>
                         <a href={`tel:${interest.mobile}`} className="text-primary-600 bg-primary-50 px-2 py-1 rounded text-xs font-medium">
                           {interest.mobile}
                         </a>
                       </div>
                       <div className="text-sm text-gray-700">
-                        <span className="text-gray-500 text-xs uppercase tracking-wide">Interested in:</span>
-                        <br />
+                        <span className="text-gray-500 text-[10px] uppercase tracking-wide block mb-0.5">Interested in:</span>
                         {interest.productTitle}
                       </div>
                     </div>
@@ -563,7 +544,7 @@ export function AdminDashboard() {
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
-                    {filteredInterests.map((interest) => (
+                    {paginatedInterests.map((interest) => (
                       <tr key={interest._id}>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{interest.username}</td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
@@ -575,7 +556,7 @@ export function AdminDashboard() {
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{new Date(interest.date).toLocaleString()}</td>
                       </tr>
                     ))}
-                    {filteredInterests.length === 0 && (
+                    {paginatedInterests.length === 0 && (
                       <tr>
                         <td colSpan="4" className="px-6 py-4 text-center text-sm text-gray-500">No interests found for this date range.</td>
                       </tr>
@@ -583,6 +564,29 @@ export function AdminDashboard() {
                   </tbody>
                 </table>
               </div>
+
+              {/* Pagination Controls */}
+              {totalInterestPages > 1 && (
+                <div className="flex justify-between items-center mt-6 pt-4 border-t border-gray-100">
+                  <button
+                    onClick={() => setInterestPage(p => Math.max(1, p - 1))}
+                    disabled={interestPage === 1}
+                    className="px-3 py-1 text-sm border rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Previous
+                  </button>
+                  <span className="text-sm text-gray-600">
+                    Page {interestPage} of {totalInterestPages}
+                  </span>
+                  <button
+                    onClick={() => setInterestPage(p => Math.min(totalInterestPages, p + 1))}
+                    disabled={interestPage === totalInterestPages}
+                    className="px-3 py-1 text-sm border rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Next
+                  </button>
+                </div>
+              )}
             </section>
           </div>
         )}

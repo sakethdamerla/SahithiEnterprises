@@ -11,11 +11,7 @@ export function PWAInstallPrompt() {
             // Stash the event so it can be triggered later.
             setDeferredPrompt(e);
             // Update UI notify the user they can install the PWA
-            // Only show if not dismissed previously (checking sessionStorage)
-            const hasDismissed = sessionStorage.getItem('pwa_prompt_dismissed');
-            if (!hasDismissed) {
-                setShowPrompt(true);
-            }
+            setShowPrompt(true);
         };
 
         window.addEventListener('beforeinstallprompt', handler);
@@ -45,7 +41,7 @@ export function PWAInstallPrompt() {
 
     const handleDismiss = () => {
         setShowPrompt(false);
-        sessionStorage.setItem('pwa_prompt_dismissed', 'true');
+        // sessionStorage.setItem('pwa_prompt_dismissed', 'true');
     };
 
     if (!showPrompt) return null;

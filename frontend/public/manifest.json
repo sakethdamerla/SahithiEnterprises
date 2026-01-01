@@ -1,11 +1,11 @@
 {
-    "name": "Enterprise Products",
-    "short_name": "EntProd",
+    "name": "Sahithi Enterprises",
+    "short_name": "Sahithi Enterprises",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#ffffff",
     "theme_color": "#0284c7",
-    "description": "Enterprise Product Site PWA",
+    "description": "Sahithi Enterprises",
     "icons": [
         {
             "src": "SE.png",

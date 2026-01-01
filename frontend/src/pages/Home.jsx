@@ -7,7 +7,7 @@ import { getCategoryInfo, categoryData as staticCategoryData } from '../utils/ca
 
 function OfferBanner() {
   // Configurable banner image (could be dynamic later)
-  const bannerImage = "https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80";
+  const bannerImage = "https://media.istockphoto.com/id/1194418188/vector/new-year-sale-discount-banner-template-promotion-design-for-business.jpg?s=612x612&w=0&k=20&c=e-ON2GPZASKqQgzSH53N0MYuaVtE0SYk6LldcX8B_zw=";
 
   const scrollToCategories = () => {
     const element = document.getElementById('categories');

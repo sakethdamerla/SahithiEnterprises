@@ -140,9 +140,9 @@ export function ProductCard({ product, onEdit, onDelete, onToggleStock }) {
         className={`card overflow-hidden flex flex-col h-full cursor-pointer group ${product.isTemporarilyClosed ? 'opacity-75 grayscale-[0.5]' : ''}`}
       >
         {/* Product Image */}
-        <div className="relative h-32 md:h-48 overflow-hidden bg-gray-200">
+        <div className="relative h-32 md:h-48 overflow-hidden bg-white">
           {!imageLoaded && (
-            <div className="absolute inset-0 bg-gray-200 animate-pulse flex items-center justify-center text-gray-400">
+            <div className="absolute inset-0 bg-gray-100 animate-pulse flex items-center justify-center text-gray-400">
               <svg className="w-10 h-10 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
@@ -158,7 +158,7 @@ export function ProductCard({ product, onEdit, onDelete, onToggleStock }) {
                 e.target.src = fallback;
               }
             }}
-            className={`w-full h-full object-cover hover:scale-110 transition-transform duration-300 ${imageLoaded ? 'opacity-100' : 'opacity-0'}`}
+            className={`w-full h-full object-contain p-2 hover:scale-105 transition-transform duration-300 ${imageLoaded ? 'opacity-100' : 'opacity-0'}`}
             loading="lazy"
           />
           {/* Category Badge */}
@@ -371,12 +371,12 @@ export function ProductCard({ product, onEdit, onDelete, onToggleStock }) {
             </button>
 
             {/* Image Area */}
-            <div className="w-full h-48 bg-gray-100 relative shrink-0">
+            <div className="w-full h-48 bg-white relative shrink-0">
               <img
                 src={product.imageUrl}
                 alt={product.title}
                 onError={(e) => { if (e.target.src !== fallback) e.target.src = fallback; }}
-                className="w-full h-full object-cover"
+                className="w-full h-full object-contain p-2"
               />
               <div className="absolute top-2 left-2 px-2 py-0.5 bg-white/90 backdrop-blur-sm rounded-full text-[10px] font-bold text-primary-600 uppercase tracking-wide">
                 {product.category}

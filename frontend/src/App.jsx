@@ -9,6 +9,9 @@ import { PWAInstallPrompt } from './components/PWAInstallPrompt';
 import { Loader } from './components/Loader';
 import './index.css';
 
+import { Footer } from './components/Footer';
+import { PWAUpdatePrompt } from './components/PWAUpdatePrompt';
+
 // Lazy load pages
 const Home = lazy(() => import('./pages/Home').then(module => ({ default: module.Home })));
 const Category = lazy(() => import('./pages/Category').then(module => ({ default: module.Category })));
@@ -40,6 +43,13 @@ function AppLayout() {
   // Individual pages will handle their own data loading states.
   // const { isLoading } = useProducts(); 
 
+  // Record Visit on Entry
+  useEffect(() => {
+    const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+    fetch(`${API_URL}/record-visit`, { method: 'POST' })
+      .catch(err => console.error("Error recording visit", err));
+  }, []);
+
   // if (isLoading) {
   //   return <Loader />;
   // }
@@ -67,7 +77,9 @@ function AppLayout() {
         </Suspense>
       </main>
 
+      <Footer />
 
+      <PWAUpdatePrompt />
       <PWAInstallPrompt />
     </div>
   );
@@ -77,7 +89,7 @@ export default function App() {
   return (
     <AuthProvider>
       <ProductsProvider>
-        <BrowserRouter>
+        <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
           <ScrollToTop />
           <AppLayout />
         </BrowserRouter>

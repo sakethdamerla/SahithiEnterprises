@@ -9,7 +9,7 @@ import { PongalPot } from '../components/PongalPot';
 
 function OfferBanner() {
   // Configurable banner image (could be dynamic later)
-  const bannerImage = "https://media.istockphoto.com/id/1194418188/vector/new-year-sale-discount-banner-template-promotion-design-for-business.jpg?s=612x612&w=0&k=20&c=e-ON2GPZASKqQgzSH53N0MYuaVtE0SYk6LldcX8B_zw=";
+  const bannerImage = "https://images.template.net/249563/pongal-banner-background-edit-online-1.jpg";
 
   const scrollToCategories = () => {
     const element = document.getElementById('categories');

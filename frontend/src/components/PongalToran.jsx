@@ -1,7 +1,7 @@
 
 export const PongalToran = () => {
     return (
-        <div className="w-full absolute top-0 left-0 overflow-hidden pointer-events-none z-50 h-24">
+        <div className="w-full absolute top-0 left-0 overflow-hidden pointer-events-none z-10 h-24">
             <svg
                 viewBox="0 0 800 120"
                 preserveAspectRatio="none"

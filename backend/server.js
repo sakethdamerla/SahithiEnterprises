@@ -4,6 +4,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import { Product } from './models/Product.js';
 import { Interest } from './models/Interest.js';
+import { Traffic } from './models/Traffic.js';
 
 dotenv.config();
 
@@ -41,6 +42,37 @@ const storage = new CloudinaryStorage({
 });
 
 const upload = multer({ storage });
+
+// Traffic Recording Endpoint (Called by frontend on app load)
+app.post('/api/record-visit', async (req, res) => {
+    try {
+        const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+
+        // Upsert: find record for today, increment visits. If not found, create new.
+        await Traffic.findOneAndUpdate(
+            { date: today },
+            { $inc: { visits: 1 } },
+            { upsert: true, new: true, setDefaultsOnInsert: true }
+        );
+
+        res.status(200).json({ message: 'Visit recorded' });
+    } catch (error) {
+        console.error('Error recording visit:', error);
+        res.status(500).json({ message: 'Error recording visit' });
+    }
+});
+
+// Get Traffic Data
+app.get('/api/traffic', async (req, res) => {
+    try {
+        // Get last 30 days
+        const trafficData = await Traffic.find().sort({ date: -1 }).limit(30);
+        res.json(trafficData.reverse()); // Reverse to show oldest to newest
+    } catch (error) {
+        console.error('Error fetching traffic:', error);
+        res.status(500).json({ message: error.message });
+    }
+});
 
 // Upload Endpoint
 app.post('/api/upload', upload.single('image'), (req, res) => {

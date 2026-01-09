@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import { useProducts } from '../context/ProductsContext';
 import { useAuth } from '../context/AuthContext';
 import { ProductCard } from '../components/ProductCard';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 const emptyForm = {
   id: null,
@@ -28,6 +29,21 @@ export function AdminDashboard() {
   const [activeView, setActiveView] = useState('products');
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
+  const [trafficData, setTrafficData] = useState([]);
+
+  useEffect(() => {
+    if (activeView === 'traffic') {
+      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+      fetch(`${API_URL}/traffic`)
+        .then(res => res.json())
+        .then(data => setTrafficData(data))
+        .catch(err => console.error("Error fetching traffic:", err));
+    }
+  }, [activeView]);
+
+  // ... (rest of the code)
+
+  // (This is a simplified view of where the chart goes. I'll need to carefully insert it)
 
   const PREDEFINED_CATEGORIES = ['electronics', 'tyres', 'power'];
 
@@ -232,24 +248,33 @@ export function AdminDashboard() {
             <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Overview</h1>
           </div>
 
-          <div className="flex gap-4 border-b border-gray-100 overflow-x-auto">
+          <div className="flex p-1 bg-gray-100 rounded-xl gap-1">
             <button
               onClick={() => setActiveView('products')}
-              className={`pb-2 md:pb-3 px-1 text-sm font-medium transition-colors relative whitespace-nowrap ${activeView === 'products'
-                ? 'text-primary-600 border-b-2 border-primary-600'
-                : 'text-gray-500 hover:text-gray-700'
+              className={`flex-1 px-2 md:px-4 py-2 text-xs md:text-sm font-medium rounded-lg transition-all duration-200 whitespace-nowrap ${activeView === 'products'
+                ? 'bg-white text-primary-600 shadow-sm ring-1 ring-black/5'
+                : 'text-gray-500 hover:text-gray-700 hover:bg-gray-200/50'
                 }`}
             >
-              Product Management
+              Products
             </button>
             <button
               onClick={() => setActiveView('interests')}
-              className={`pb-2 md:pb-3 px-1 text-sm font-medium transition-colors relative whitespace-nowrap ${activeView === 'interests'
-                ? 'text-primary-600 border-b-2 border-primary-600'
-                : 'text-gray-500 hover:text-gray-700'
+              className={`flex-1 px-2 md:px-4 py-2 text-xs md:text-sm font-medium rounded-lg transition-all duration-200 whitespace-nowrap ${activeView === 'interests'
+                ? 'bg-white text-primary-600 shadow-sm ring-1 ring-black/5'
+                : 'text-gray-500 hover:text-gray-700 hover:bg-gray-200/50'
                 }`}
             >
               Interested Users
+            </button>
+            <button
+              onClick={() => setActiveView('traffic')}
+              className={`flex-1 px-2 md:px-4 py-2 text-xs md:text-sm font-medium rounded-lg transition-all duration-200 whitespace-nowrap ${activeView === 'traffic'
+                ? 'bg-white text-primary-600 shadow-sm ring-1 ring-black/5'
+                : 'text-gray-500 hover:text-gray-700 hover:bg-gray-200/50'
+                }`}
+            >
+              Analytics
             </button>
           </div>
         </div>
@@ -487,11 +512,17 @@ export function AdminDashboard() {
               }
             </section >
           </div>
-        ) : (
+        ) : activeView === 'interests' ? (
           <div className="container mx-auto pb-10">
+            {/* ... (Existing Interests Code) ... */}
             <section className="bg-white rounded-xl shadow-sm border p-4 md:p-6">
+              {/* ... */}
+              {/* (I'm preserving the existing structure by referencing it, but replacing the whole block if needed or just appending the else if) */}
+
+              {/* To make this safe, I will just append the traffic view logic */}
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
                 <h2 className="text-lg md:text-xl font-bold">Interested Users</h2>
+                {/* ... */}
                 <div className="flex items-center gap-2 self-start sm:self-auto">
                   <label htmlFor="interest-filter" className="text-sm text-gray-600 font-medium">Date:</label>
                   <select
@@ -587,6 +618,71 @@ export function AdminDashboard() {
                   </button>
                 </div>
               )}
+            </section>
+          </div>
+        ) : (
+          <div className="container mx-auto pb-10">
+            <section className="bg-white rounded-xl shadow-sm border p-4 md:p-6">
+              <h2 className="text-lg md:text-xl font-bold mb-6 flex items-center gap-2">
+                <svg className="w-6 h-6 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
+                Traffic Analytics
+              </h2>
+
+              {/* Key Metrics Cards */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
+                <div className="bg-blue-50 p-4 rounded-xl border border-blue-100 flex items-center justify-between shadow-sm">
+                  <div>
+                    <p className="text-xs md:text-sm text-blue-600 font-semibold uppercase tracking-wider">Visits Today</p>
+                    <p className="text-2xl md:text-3xl font-bold text-gray-900 mt-1">
+                      {trafficData.length > 0 && new Date(trafficData[trafficData.length - 1].date).toDateString() === new Date().toDateString()
+                        ? trafficData[trafficData.length - 1].visits
+                        : 0}
+                    </p>
+                  </div>
+                  <div className="p-3 bg-blue-100 rounded-full text-blue-600">
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                  </div>
+                </div>
+
+                <div className="bg-purple-50 p-4 rounded-xl border border-purple-100 flex items-center justify-between shadow-sm">
+                  <div>
+                    <p className="text-xs md:text-sm text-purple-600 font-semibold uppercase tracking-wider">Total (30 Days)</p>
+                    <p className="text-2xl md:text-3xl font-bold text-gray-900 mt-1">
+                      {trafficData.reduce((acc, curr) => acc + curr.visits, 0)}
+                    </p>
+                  </div>
+                  <div className="p-3 bg-purple-100 rounded-full text-purple-600">
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
+                  </div>
+                </div>
+              </div>
+
+              <h3 className="text-sm md:text-base font-semibold text-gray-700 mb-4">Daily Visits (Last 30 Days)</h3>
+              <div className="h-[250px] md:h-[400px] w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={trafficData} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
+                    <XAxis
+                      dataKey="date"
+                      tick={{ fontSize: 10 }}
+                      axisLine={false}
+                      tickLine={false}
+                      tickFormatter={(val) => new Date(val).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+                    />
+                    <YAxis
+                      tick={{ fontSize: 11 }}
+                      axisLine={false}
+                      tickLine={false}
+                    />
+                    <Tooltip
+                      formatter={(value) => [value, 'Visits']}
+                      labelFormatter={(label) => new Date(label).toLocaleDateString()}
+                      contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                    />
+                    <Bar dataKey="visits" fill="#3b82f6" radius={[4, 4, 0, 0]} maxBarSize={50} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
             </section>
           </div>
         )}

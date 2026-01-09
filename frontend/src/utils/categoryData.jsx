@@ -3,6 +3,24 @@ export const categoryData = {
         title: 'Electronics',
         // description: 'Smart home appliances and climate comfort tech',
         icon: '🏠',
+        // promotions: [
+        //     {
+        //         id: 'elec-1',
+        //         title: 'Summer Sale',
+        //         subtitle: 'Get 10% off on cooling appliances',
+        //         image: 'https://placehold.co/600x400/1a1a1a/FFF?text=Electronics+Sale', // REPLACE WITH YOUR IMAGE URL
+        //         buttonText: 'Shop Now',
+        //         link: '#'
+        //     },
+        //     {
+        //         id: 'elec-2',
+        //         title: 'New Arrivals',
+        //         subtitle: 'Latest gadgets in store',
+        //         image: 'https://placehold.co/600x400/2563eb/FFF?text=New+Arrivals', // REPLACE WITH YOUR IMAGE URL
+        //         buttonText: 'View',
+        //         link: '#'
+        //     }
+        // ]
     },
     tyres: {
         title: 'Tyres',
@@ -21,11 +39,31 @@ export const categoryData = {
                 <path d="m16.2 7.8 2.9-2.9" />
             </svg>
         ),
+        promotions: [
+            {
+                id: 'tyre-1',
+                title: 'Service Available',
+                // subtitle: 'Premium Tyres for wet roads',
+                image: 'https://ap.boschcarservice.com/in/media/images/16_9/guides/tyre/job_2709_final_image_640w_360h.webp',
+                // buttonText: 'Explore',
+                // link: '#'
+            }
+        ]
     },
     power: {
         title: 'Inverters & Batteries',
         // Description removed as per user preference
         icon: '🔋',
+        promotions: [
+            {
+                id: 'pwr-1',
+                title: 'Get a Trolley OFFER',
+                // subtitle: 'Never lose power again',
+                image: 'https://m.media-amazon.com/images/I/71TubQI3b5L.jpg', // REPLACE WITH YOUR IMAGE URL
+                // buttonText: 'Learn More',
+                link: '#'
+            }
+        ]
     },
 };
 

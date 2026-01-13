@@ -46,7 +46,8 @@ const upload = multer({ storage });
 // Traffic Recording Endpoint (Called by frontend on app load)
 app.post('/api/record-visit', async (req, res) => {
     try {
-        const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+        // Use provided date from frontend (local time) or fallback to server time (UTC)
+        const today = req.body.date || new Date().toISOString().split('T')[0];
 
         // Upsert: find record for today, increment visits. If not found, create new.
         await Traffic.findOneAndUpdate(

@@ -45,8 +45,14 @@ function AppLayout() {
   // Record Visit on Entry
   useEffect(() => {
     const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
-    fetch(`${API_URL}/record-visit`, { method: 'POST' })
-      .catch(err => console.error("Error recording visit", err));
+    // Send local date (YYYY-MM-DD) to ensure visits are recorded for the correct day in the user's timezone
+    const localDate = new Date().toLocaleDateString('en-CA');
+
+    fetch(`${API_URL}/record-visit`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ date: localDate })
+    }).catch(err => console.error("Error recording visit", err));
   }, []);
 
   // if (isLoading) {

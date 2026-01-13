@@ -74,7 +74,37 @@ export function PWAUpdatePrompt() {
                         Later
                     </button>
                 </div>
+
+                <div className="pt-2 border-t border-gray-100 mt-1">
+                    <button
+                        className="w-full text-xs text-red-500 hover:text-red-700 font-medium py-2 flex items-center justify-center gap-1 transition-colors"
+                        onClick={async () => {
+                            if (confirm("Are you sure you want to uninstall? This will clear all app data and allow you to reinstall.")) {
+                                // Unregister SW
+                                if ('serviceWorker' in navigator) {
+                                    const registrations = await navigator.serviceWorker.getRegistrations();
+                                    for (const registration of registrations) {
+                                        await registration.unregister();
+                                    }
+                                }
+                                // Clear Caches
+                                if ('caches' in window) {
+                                    const keys = await caches.keys();
+                                    for (const key of keys) {
+                                        await caches.delete(key);
+                                    }
+                                }
+                                // Redirect to site (Reloads as fresh)
+                                window.location.reload();
+                            }
+                        }}
+                    >
+                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                        Uninstall App
+                    </button>
+                </div>
             </div>
         </div>
+
     )
 }

@@ -20,7 +20,7 @@ export function PWAUpdatePrompt() {
 
     // Close the prompt without updating
     const close = () => {
-        setNeedRefresh(false)
+        setNeedRefresh(false) // toggle this if using state
     }
 
     // Reload the page to activate the new SW

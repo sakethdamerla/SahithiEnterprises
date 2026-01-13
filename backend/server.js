@@ -134,11 +134,15 @@ app.delete('/api/products/:id', async (req, res) => {
 });
 
 // Rate a product
+// Rate a product
 app.post('/api/products/:id/rate', async (req, res) => {
     try {
-        const { rating } = req.body;
+        const { rating, userId } = req.body;
         if (!rating || rating < 1 || rating > 5) {
             return res.status(400).json({ message: 'Invalid rating (1-5)' });
+        }
+        if (!userId) {
+            return res.status(400).json({ message: 'User ID is required' });
         }
 
         const product = await Product.findById(req.params.id);
@@ -148,7 +152,18 @@ app.post('/api/products/:id/rate', async (req, res) => {
             product.ratings = [];
         }
 
-        product.ratings.push(rating);
+        // Check if user already rated
+        const existingRatingIndex = product.ratings.findIndex(r => r.userId === userId);
+
+        if (existingRatingIndex !== -1) {
+            // Update existing rating
+            product.ratings[existingRatingIndex].rating = rating;
+            product.ratings[existingRatingIndex].date = new Date();
+        } else {
+            // Add new rating
+            product.ratings.push({ userId, rating, date: new Date() });
+        }
+
         await product.save();
 
         res.status(200).json(product);

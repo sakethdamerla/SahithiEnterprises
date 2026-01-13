@@ -5,6 +5,10 @@ import { useAuth } from '../context/AuthContext';
 import { ProductCard } from '../components/ProductCard';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
+import { ProductCardSkeleton } from '../components/Skeleton';
+
+// ... other imports ...
+
 const emptyForm = {
   id: null,
   title: '',
@@ -20,7 +24,7 @@ const emptyForm = {
  * CRUD actions persist to localStorage via ProductsContext.
  */
 export function AdminDashboard() {
-  const { products, addProduct, updateProduct, deleteProduct, getCategories } = useProducts();
+  const { products, isLoading, addProduct, updateProduct, deleteProduct, getCategories } = useProducts();
   const { adminUser } = useAuth();
   const [searchParams] = useSearchParams();
   const [formState, setFormState] = useState(emptyForm);
@@ -491,7 +495,15 @@ export function AdminDashboard() {
               </div>
 
               {
-                filteredProducts.length === 0 ? (
+                isLoading ? (
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
+                    {[...Array(8)].map((_, i) => (
+                      <div key={i} className="h-full">
+                        <ProductCardSkeleton />
+                      </div>
+                    ))}
+                  </div>
+                ) : filteredProducts.length === 0 ? (
                   <div className="bg-white border rounded-lg p-6 text-center text-gray-600">
                     No products match this filter.
                   </div>

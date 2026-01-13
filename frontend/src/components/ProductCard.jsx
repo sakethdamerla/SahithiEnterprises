@@ -35,25 +35,44 @@ export function ProductCard({ product, onEdit, onDelete, onToggleStock }) {
   // Calculate average rating
   const ratings = product.ratings || [];
   const averageRating = ratings.length > 0
-    ? (ratings.reduce((a, b) => a + b, 0) / ratings.length).toFixed(1)
+    ? (ratings.reduce((a, b) => a + (typeof b === 'number' ? b : b.rating), 0) / ratings.length).toFixed(1)
     : 0;
+
+  // Get or create unique User ID for ratings
+  const getUserId = () => {
+    let userId = localStorage.getItem('user_uuid');
+    if (!userId) {
+      userId = 'user_' + Math.random().toString(36).substr(2, 9) + Date.now().toString(36);
+      localStorage.setItem('user_uuid', userId);
+    }
+    return userId;
+  };
 
   const handleRate = async (star) => {
     if (ratingLoading) return;
     setRatingLoading(true);
+    const userId = getUserId();
+
     try {
       const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
       const response = await fetch(`${API_URL}/products/${product._id}/rate`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ rating: star }),
+        body: JSON.stringify({ rating: star, userId }),
       });
       if (response.ok) {
         setUserRating(star);
         localStorage.setItem(`rating_${product._id}`, star);
 
-        // Optimistically update the product's ratings array in the UI
-        product.ratings.push(star);
+        // Update local state to reflect new rating
+        // Check if we already have this user's rating in the array
+        const existingIndex = product.ratings.findIndex(r => (typeof r === 'object' && r.userId === userId));
+
+        if (existingIndex !== -1) {
+          product.ratings[existingIndex].rating = star;
+        } else {
+          product.ratings.push({ userId, rating: star, date: new Date() });
+        }
       }
     } catch (error) {
       console.error(error);
@@ -143,10 +162,7 @@ export function ProductCard({ product, onEdit, onDelete, onToggleStock }) {
         <div className="relative h-32 md:h-48 overflow-hidden bg-white">
           {!imageLoaded && (
             <div className="absolute inset-0 bg-gray-100 animate-pulse flex items-center justify-center text-gray-400">
-              <svg className="w-10 h-10 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-              </svg>
+              <span className="text-xs">Loading...</span>
             </div>
           )}
           <img
@@ -269,10 +285,6 @@ export function ProductCard({ product, onEdit, onDelete, onToggleStock }) {
                       : loading
                         ? (
                           <span className="flex items-center gap-2">
-                            <svg className="animate-spin h-3 w-3 md:h-4 md:w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                            </svg>
                             Sending...
                           </span>
                         )
@@ -333,12 +345,7 @@ export function ProductCard({ product, onEdit, onDelete, onToggleStock }) {
                             disabled={loading}
                             className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 font-medium transition-colors shadow-lg shadow-primary-600/30 disabled:opacity-75 flex justify-center items-center"
                           >
-                            {loading ? (
-                              <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                              </svg>
-                            ) : 'Submit'}
+                            {loading ? 'Sending...' : 'Submit'}
                           </button>
                         </div>
                       </form>

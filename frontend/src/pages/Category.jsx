@@ -4,7 +4,7 @@ import { ProductCard } from '../components/ProductCard';
 import { useProducts } from '../context/ProductsContext';
 
 import { getCategoryInfo } from '../utils/categoryData.jsx';
-import { Loader } from '../components/Loader';
+import { ProductCardSkeleton } from '../components/Skeleton';
 
 /**
  * Category page component that displays products for a specific category
@@ -43,8 +43,24 @@ export function Category() {
 
   if (isLoading) {
     return (
-      <div className="flex justify-center items-center min-h-[50vh]">
-        <Loader />
+      <div className="min-h-screen bg-gray-50">
+        <div className="container mx-auto px-4 py-4 md:py-6">
+          <div className="flex items-center space-x-4 mb-6">
+            <div className="w-16 h-16 bg-gray-200 rounded-full animate-pulse"></div>
+            <div className="space-y-2">
+              <div className="h-6 w-48 bg-gray-200 rounded animate-pulse"></div>
+              <div className="h-4 w-32 bg-gray-200 rounded animate-pulse"></div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-6">
+            {[...Array(8)].map((_, i) => (
+              <div key={i} className="h-full">
+                <ProductCardSkeleton />
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     );
   }

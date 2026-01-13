@@ -2,7 +2,7 @@ import { useProducts } from '../context/ProductsContext';
 import { useAuth } from '../context/AuthContext';
 import { CategoryCard } from '../components/CategoryCard';
 import { Link } from 'react-router-dom';
-import { Loader } from '../components/Loader';
+import { CategoryCardSkeleton } from '../components/Skeleton';
 import { getCategoryInfo, categoryData as staticCategoryData } from '../utils/categoryData.jsx';
 import { PongalToran } from '../components/PongalToran';
 import { PongalPot } from '../components/PongalPot';
@@ -45,13 +45,7 @@ export function Home() {
   const dynamicCategories = getCategories();
   const categories = [...new Set([...Object.keys(staticCategoryData), ...dynamicCategories])];
 
-  if (isLoading) {
-    return (
-      <div className="container mx-auto px-4 py-6 max-w-7xl min-h-screen flex items-center justify-center">
-        <Loader />
-      </div>
-    );
-  }
+
 
   return (
     <div className="container mx-auto px-4 py-4 md:py-6 max-w-7xl relative">
@@ -71,7 +65,7 @@ export function Home() {
         </div>
       </div>
 
-      
+
       {/* Brand Header for Mobile App Feel */}
       <div className="mb-6 flex justify-between items-center md:hidden">
         {/* <div>
@@ -105,7 +99,13 @@ export function Home() {
           </span>
         </div>
 
-        {categories.length > 0 ? (
+        {isLoading ? (
+          <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6">
+            {[...Array(6)].map((_, i) => (
+              <CategoryCardSkeleton key={i} />
+            ))}
+          </div>
+        ) : categories.length > 0 ? (
           <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6">
             {categories.map((category) => {
               const info = getCategoryInfo(category);

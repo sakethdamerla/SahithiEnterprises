@@ -6,7 +6,6 @@ import { AuthProvider } from './context/AuthContext';
 import { ProductsProvider, useProducts } from './context/ProductsContext';
 import { AdminGuard } from './components/AdminGuard';
 import { PWAInstallPrompt } from './components/PWAInstallPrompt';
-import { Loader } from './components/Loader';
 import './index.css';
 
 import { Footer } from './components/Footer';
@@ -59,7 +58,7 @@ function AppLayout() {
       <Header />
 
       <main className="flex-1">
-        <Suspense fallback={<Loader />}>
+        <Suspense fallback={<div className="min-h-[50vh]" />}>
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/category/:slug" element={<Category />} />

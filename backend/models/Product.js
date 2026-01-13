@@ -7,7 +7,11 @@ const productSchema = new mongoose.Schema({
     imageUrl: { type: String, required: true },
     category: { type: String, required: true },
     isTemporarilyClosed: { type: Boolean, default: false },
-    ratings: { type: [Number], default: [] },
+    ratings: [{
+        userId: { type: String, required: true },
+        rating: { type: Number, required: true, min: 1, max: 5 },
+        date: { type: Date, default: Date.now }
+    }],
 });
 
 export const Product = mongoose.model('Product', productSchema);

@@ -27,6 +27,11 @@ export default defineConfig({
             type: 'image/png'
           }
         ]
+      },
+      workbox: {
+        // Define runtime caching or other rules if needed
+        // Import our custom push listener
+        importScripts: ['sw-push-listener.js']
       }
     })
   ],

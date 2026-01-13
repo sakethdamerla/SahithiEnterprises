@@ -206,6 +206,36 @@ app.get('/api/interests', async (req, res) => {
 
 // --- Announcements Endpoints ---
 
+import webpush from 'web-push';
+import { Subscription } from './models/Subscription.js';
+
+// VAPID Keys - In production, these should be in environment variables
+const publicVapidKey = process.env.VAPID_PUBLIC_KEY || 'BAyPKzO7w9lvfsg-oITsS4QFvFw1M9rRYAFoVtKuxCS7mJYKOH6M4UgWMUIV9vEBjdTZF7-A-fZZNq4oitiWNcg';
+const privateVapidKey = process.env.VAPID_PRIVATE_KEY || 'X-sLEg5tcPaoxPG9giFf5RzMMsxPYjfRr0NaC0rDDw0';
+
+webpush.setVapidDetails(
+    'mailto:test@test.com',
+    publicVapidKey,
+    privateVapidKey
+);
+
+// Subscribe route
+app.post('/api/subscribe', async (req, res) => {
+    try {
+        const subscription = req.body;
+        // Check if exists
+        const exists = await Subscription.findOne({ endpoint: subscription.endpoint });
+        if (!exists) {
+            const newSub = new Subscription(subscription);
+            await newSub.save();
+        }
+        res.status(201).json({});
+    } catch (error) {
+        console.error('Subscription error:', error);
+        res.status(500).json({ message: error.message });
+    }
+});
+
 // Get active announcements (Public)
 app.get('/api/announcements', async (req, res) => {
     try {
@@ -226,11 +256,32 @@ app.get('/api/admin/announcements', async (req, res) => {
     }
 });
 
-// Create announcement
+// Create announcement and notify
 app.post('/api/announcements', async (req, res) => {
     try {
         const newAnnouncement = new Announcement(req.body);
         const savedAnnouncement = await newAnnouncement.save();
+
+        // Send Notification asynchronously
+        const payload = JSON.stringify({
+            title: newAnnouncement.title,
+            body: newAnnouncement.message,
+            icon: '/pwa-192x192.png'
+        });
+
+        // Fetch all subscriptions and send
+        Subscription.find().then(subscriptions => {
+            subscriptions.forEach(sub => {
+                webpush.sendNotification(sub, payload).catch(err => {
+                    console.error('Notification error', err);
+                    if (err.statusCode === 410 || err.statusCode === 404) {
+                        // Subscription has expired or is no longer valid
+                        Subscription.findByIdAndDelete(sub._id).catch(e => console.error('Error deleting sub', e));
+                    }
+                });
+            });
+        });
+
         res.status(201).json(savedAnnouncement);
     } catch (error) {
         res.status(400).json({ message: error.message });

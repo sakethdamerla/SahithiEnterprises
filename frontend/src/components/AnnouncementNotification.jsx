@@ -56,7 +56,7 @@ export function AnnouncementPopup() {
     if (!latestAnnouncement || !isVisible) return null;
 
     return (
-        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 sm:p-6 pointer-events-none">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 pointer-events-none">
             <div
                 className="bg-white rounded-2xl shadow-2xl border border-gray-100 max-w-md w-full pointer-events-auto transform transition-all animate-in slide-in-from-bottom duration-500 relative overflow-hidden"
             >
@@ -87,14 +87,55 @@ export function AnnouncementPopup() {
                         <p className="whitespace-pre-wrap">{latestAnnouncement.message}</p>
                     </div>
 
-                    <button
-                        onClick={handleDismiss}
-                        className="w-full bg-primary-600 text-white py-3 rounded-xl font-semibold hover:bg-primary-700 transition-all shadow-lg shadow-primary-600/20 active:scale-95"
-                    >
-                        Got it
-                    </button>
+                    <div className="space-y-3">
+                        <button
+                            onClick={async () => {
+                                handleDismiss();
+                                // Try to subscribe to notifications
+                                if ('serviceWorker' in navigator && 'PushManager' in window) {
+                                    try {
+                                        const register = await navigator.serviceWorker.ready;
+                                        const subscription = await register.pushManager.subscribe({
+                                            userVisibleOnly: true,
+                                            applicationServerKey: urlBase64ToUint8Array('BAyPKzO7w9lvfsg-oITsS4QFvFw1M9rRYAFoVtKuxCS7mJYKOH6M4UgWMUIV9vEBjdTZF7-A-fZZNq4oitiWNcg')
+                                        });
+
+                                        const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+                                        await fetch(`${API_URL}/subscribe`, {
+                                            method: 'POST',
+                                            body: JSON.stringify(subscription),
+                                            headers: {
+                                                'Content-Type': 'application/json'
+                                            }
+                                        });
+                                        console.log('User subscribed to notifications');
+                                    } catch (error) {
+                                        console.error('Failed to subscribe user', error);
+                                    }
+                                }
+                            }}
+                            className="w-full bg-primary-600 text-white py-3 rounded-xl font-semibold hover:bg-primary-700 transition-all shadow-lg shadow-primary-600/20 active:scale-95"
+                        >
+                            Got it
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
     );
+}
+
+function urlBase64ToUint8Array(base64String) {
+    const padding = '='.repeat((4 - base64String.length % 4) % 4);
+    const base64 = (base64String + padding)
+        .replace(/-/g, '+')
+        .replace(/_/g, '/');
+
+    const rawData = window.atob(base64);
+    const outputArray = new Uint8Array(rawData.length);
+
+    for (let i = 0; i < rawData.length; ++i) {
+        outputArray[i] = rawData.charCodeAt(i);
+    }
+    return outputArray;
 }

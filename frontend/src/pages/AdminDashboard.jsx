@@ -35,6 +35,11 @@ export function AdminDashboard() {
   const [selectedFile, setSelectedFile] = useState(null);
   const [trafficData, setTrafficData] = useState([]);
 
+  // Announcements State
+  const [announcements, setAnnouncements] = useState([]);
+  const [announcementForm, setAnnouncementForm] = useState({ title: '', message: '' });
+  const [isAnnouncementFormOpen, setIsAnnouncementFormOpen] = useState(false);
+
   useEffect(() => {
     if (activeView === 'traffic') {
       const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
@@ -42,6 +47,12 @@ export function AdminDashboard() {
         .then(res => res.json())
         .then(data => setTrafficData(data))
         .catch(err => console.error("Error fetching traffic:", err));
+    } else if (activeView === 'announcements') {
+      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+      fetch(`${API_URL}/admin/announcements`)
+        .then(res => res.json())
+        .then(data => setAnnouncements(data))
+        .catch(err => console.error("Error fetching announcements:", err));
     }
   }, [activeView]);
 
@@ -163,6 +174,38 @@ export function AdminDashboard() {
     return data.imageUrl;
   };
 
+  const handleAnnouncementSubmit = async (e) => {
+    e.preventDefault();
+    const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+    try {
+      const res = await fetch(`${API_URL}/announcements`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(announcementForm)
+      });
+      if (res.ok) {
+        setAnnouncementForm({ title: '', message: '' });
+        setIsAnnouncementFormOpen(false);
+        // Refresh list
+        const updatedList = await fetch(`${API_URL}/admin/announcements`).then(r => r.json());
+        setAnnouncements(updatedList);
+      }
+    } catch (error) {
+      console.error("Error creating announcement", error);
+    }
+  };
+
+  const deleteAnnouncement = async (id) => {
+    if (!confirm("Delete this announcement?")) return;
+    const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+    try {
+      await fetch(`${API_URL}/announcements/${id}`, { method: 'DELETE' });
+      setAnnouncements(prev => prev.filter(a => a._id !== id));
+    } catch (error) {
+      console.error("Error deleting", error);
+    }
+  };
+
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e) => {
@@ -252,7 +295,7 @@ export function AdminDashboard() {
             <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Overview</h1>
           </div>
 
-          <div className="flex p-1 bg-gray-100 rounded-xl gap-1">
+          <div className="grid grid-cols-2 md:flex p-1 bg-gray-100 rounded-xl gap-1">
             <button
               onClick={() => setActiveView('products')}
               className={`flex-1 px-2 md:px-4 py-2 text-xs md:text-sm font-medium rounded-lg transition-all duration-200 whitespace-nowrap ${activeView === 'products'
@@ -279,6 +322,15 @@ export function AdminDashboard() {
                 }`}
             >
               Analytics
+            </button>
+            <button
+              onClick={() => setActiveView('announcements')}
+              className={`flex-1 px-2 md:px-4 py-2 text-xs md:text-sm font-medium rounded-lg transition-all duration-200 whitespace-nowrap ${activeView === 'announcements'
+                ? 'bg-white text-primary-600 shadow-sm ring-1 ring-black/5'
+                : 'text-gray-500 hover:text-gray-700 hover:bg-gray-200/50'
+                }`}
+            >
+              Announcements
             </button>
           </div>
         </div>
@@ -630,6 +682,88 @@ export function AdminDashboard() {
                   </button>
                 </div>
               )}
+            </section>
+          </div>
+        ) : activeView === 'announcements' ? (
+          <div className="container mx-auto pb-10">
+            <section className="bg-white rounded-xl shadow-sm border p-4 md:p-6">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-xl font-bold">Announcements</h2>
+                <button
+                  onClick={() => setIsAnnouncementFormOpen(true)}
+                  className="btn-primary py-2 px-4 text-sm flex items-center gap-2"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" /></svg>
+                  Add New
+                </button>
+              </div>
+
+              {/* Add Modal */}
+              {isAnnouncementFormOpen && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+                  <div className="bg-white rounded-xl shadow-2xl w-full max-w-md p-6">
+                    <h3 className="text-lg font-bold mb-4">New Announcement</h3>
+                    <form onSubmit={handleAnnouncementSubmit} className="space-y-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
+                        <input
+                          className="input-field w-full"
+                          value={announcementForm.title}
+                          onChange={e => setAnnouncementForm(prev => ({ ...prev, title: e.target.value }))}
+                          required
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Message</label>
+                        <textarea
+                          className="input-field w-full h-32"
+                          value={announcementForm.message}
+                          onChange={e => setAnnouncementForm(prev => ({ ...prev, message: e.target.value }))}
+                          required
+                        />
+                      </div>
+                      <div className="flex justify-end gap-3 pt-4">
+                        <button
+                          type="button"
+                          onClick={() => setIsAnnouncementFormOpen(false)}
+                          className="text-gray-500 hover:text-gray-700 font-medium text-sm"
+                        >
+                          Cancel
+                        </button>
+                        <button type="submit" className="btn-primary py-2 px-4 text-sm">
+                          Post Announcement
+                        </button>
+                      </div>
+                    </form>
+                  </div>
+                </div>
+              )}
+
+              <div className="space-y-4">
+                {announcements.length === 0 ? (
+                  <div className="text-center py-10 text-gray-500 bg-gray-50 rounded-lg border border-dashed border-gray-200">
+                    No announcements yet.
+                  </div>
+                ) : (
+                  announcements.map(item => (
+                    <div key={item._id} className="border rounded-lg p-4 relative group">
+                      <div className="flex flex-col sm:flex-row justify-between items-start gap-2">
+                        <div>
+                          <h3 className="font-bold text-gray-900">{item.title}</h3>
+                          <p className="text-xs text-gray-500 mt-1">{new Date(item.date).toLocaleString()}</p>
+                        </div>
+                        <button
+                          onClick={() => deleteAnnouncement(item._id)}
+                          className="text-red-500 hover:bg-red-50 p-2 rounded-lg transition-colors self-end sm:self-start"
+                        >
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                        </button>
+                      </div>
+                      <p className="text-gray-600 mt-2 whitespace-pre-wrap text-sm">{item.message}</p>
+                    </div>
+                  ))
+                )}
+              </div>
             </section>
           </div>
         ) : (

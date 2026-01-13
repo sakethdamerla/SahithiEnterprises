@@ -5,6 +5,7 @@ import dotenv from 'dotenv';
 import { Product } from './models/Product.js';
 import { Interest } from './models/Interest.js';
 import { Traffic } from './models/Traffic.js';
+import { Announcement } from './models/Announcement.js';
 
 dotenv.config();
 
@@ -199,6 +200,49 @@ app.get('/api/interests', async (req, res) => {
         res.json(interests);
     } catch (error) {
         console.error('Error fetching interests:', error);
+        res.status(500).json({ message: error.message });
+    }
+});
+
+// --- Announcements Endpoints ---
+
+// Get active announcements (Public)
+app.get('/api/announcements', async (req, res) => {
+    try {
+        const announcements = await Announcement.find({ isActive: true }).sort({ date: -1 });
+        res.json(announcements);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
+// Get all announcements (Admin)
+app.get('/api/admin/announcements', async (req, res) => {
+    try {
+        const announcements = await Announcement.find().sort({ date: -1 });
+        res.json(announcements);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
+// Create announcement
+app.post('/api/announcements', async (req, res) => {
+    try {
+        const newAnnouncement = new Announcement(req.body);
+        const savedAnnouncement = await newAnnouncement.save();
+        res.status(201).json(savedAnnouncement);
+    } catch (error) {
+        res.status(400).json({ message: error.message });
+    }
+});
+
+// Delete announcement
+app.delete('/api/announcements/:id', async (req, res) => {
+    try {
+        await Announcement.findByIdAndDelete(req.params.id);
+        res.json({ message: 'Announcement deleted' });
+    } catch (error) {
         res.status(500).json({ message: error.message });
     }
 });

@@ -10,12 +10,14 @@ import './index.css';
 
 import { Footer } from './components/Footer';
 import { PWAUpdatePrompt } from './components/PWAUpdatePrompt';
+import { AnnouncementPopup } from './components/AnnouncementNotification';
 
 // Lazy load pages
 const Home = lazy(() => import('./pages/Home').then(module => ({ default: module.Home })));
 const Category = lazy(() => import('./pages/Category').then(module => ({ default: module.Category })));
 const AdminLogin = lazy(() => import('./pages/AdminLogin').then(module => ({ default: module.AdminLogin })));
 const AdminDashboard = lazy(() => import('./pages/AdminDashboard').then(module => ({ default: module.AdminDashboard })));
+const Announcements = lazy(() => import('./pages/Announcements').then(module => ({ default: module.Announcements })));
 
 /**
  * Component that automatically scrolls the window to the top
@@ -69,6 +71,7 @@ function AppLayout() {
             <Route path="/" element={<Home />} />
             <Route path="/category/:slug" element={<Category />} />
             <Route path="/admin/login" element={<AdminLogin />} />
+            <Route path="/announcements" element={<Announcements />} />
             <Route
               path="/admin"
               element={
@@ -85,6 +88,7 @@ function AppLayout() {
       <Footer />
 
       <PWAUpdatePrompt />
+      <AnnouncementPopup />
       <PWAInstallPrompt />
     </div>
   );

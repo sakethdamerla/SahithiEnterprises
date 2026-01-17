@@ -4,8 +4,7 @@ import { CategoryCard } from '../components/CategoryCard';
 import { Link } from 'react-router-dom';
 import { CategoryCardSkeleton } from '../components/Skeleton';
 import { getCategoryInfo, categoryData as staticCategoryData } from '../utils/categoryData.jsx';
-import { PongalToran } from '../components/PongalToran';
-import { PongalPot } from '../components/PongalPot';
+
 
 function OfferBanner() {
   // Configurable banner image (could be dynamic later)
@@ -49,21 +48,7 @@ export function Home() {
 
   return (
     <div className="container mx-auto px-4 py-4 md:py-6 max-w-7xl relative">
-      {/* Pongal Decorations for Mobile */}
-      <div className="md:hidden">
-        {/* Hanging Toran */}
-        <PongalToran />
 
-        {/* Pot at bottom right */}
-        <div className="fixed bottom-4 right-0 z-40 pointer-events-none translate-x- animate-fade-in">
-          <PongalPot />
-        </div>
-
-        {/* Pot at bottom left */}
-        <div className="fixed bottom-4 left-0 z-40 pointer-events-none translate-x- animate-fade-in">
-          <PongalPot />
-        </div>
-      </div>
 
 
       {/* Brand Header for Mobile App Feel */}

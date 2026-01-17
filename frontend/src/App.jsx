@@ -44,17 +44,25 @@ function AppLayout() {
   // Individual pages will handle their own data loading states.
   // const { isLoading } = useProducts(); 
 
-  // Record Visit on Entry
+  // Record Visit on Entry - Only once per session
   useEffect(() => {
-    const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
-    // Send local date (YYYY-MM-DD) to ensure visits are recorded for the correct day in the user's timezone
-    const localDate = new Date().toLocaleDateString('en-CA');
+    const visitRecorded = sessionStorage.getItem('visitRecorded');
 
-    fetch(`${API_URL}/record-visit`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ date: localDate })
-    }).catch(err => console.error("Error recording visit", err));
+    if (!visitRecorded) {
+      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+      // Send local date (YYYY-MM-DD) to ensure visits are recorded for the correct day in the user's timezone
+      const localDate = new Date().toLocaleDateString('en-CA');
+
+      fetch(`${API_URL}/record-visit`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ date: localDate })
+      })
+        .then(() => {
+          sessionStorage.setItem('visitRecorded', 'true');
+        })
+        .catch(err => console.error("Error recording visit", err));
+    }
   }, []);
 
   // if (isLoading) {

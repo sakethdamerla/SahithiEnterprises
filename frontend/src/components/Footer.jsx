@@ -67,9 +67,12 @@ export function Footer() {
         </div>
 
         {/* Bottom Bar */}
-        <div className="border-t border-gray-700 mt-8 pt-8 text-sm text-center">
+        <div className="border-t border-gray-700 mt-8 pt-8 text-sm text-center flex flex-col md:flex-row justify-between items-center gap-4">
           <p>
-            &copy; {currentYear} EnterpriseShop. All rights reserved. Built with React & Vite.
+            &copy; {currentYear} EnterpriseShop. All rights reserved.
+          </p>
+          <p className="flex items-center gap-1 text-gray-400">
+            Designed & Developed by <span className="text-white font-medium">Saketh Damerla</span>
           </p>
         </div>
       </div>

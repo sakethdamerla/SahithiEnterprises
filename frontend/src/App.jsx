@@ -2,7 +2,7 @@ import { Suspense, lazy, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { Header } from './components/Header';
 
-import { AuthProvider } from './context/AuthContext';
+import { AuthProvider, useAuth } from './context/AuthContext';
 import { ProductsProvider, useProducts } from './context/ProductsContext';
 import { AdminGuard } from './components/AdminGuard';
 import { PWAInstallPrompt } from './components/PWAInstallPrompt';
@@ -44,11 +44,13 @@ function AppLayout() {
   // Individual pages will handle their own data loading states.
   // const { isLoading } = useProducts(); 
 
+  const { isAdmin } = useAuth();
+
   // Record Visit on Entry - Only once per session
   useEffect(() => {
     const visitRecorded = sessionStorage.getItem('visitRecorded');
 
-    if (!visitRecorded) {
+    if (!visitRecorded && !isAdmin) {
       const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
       // Send local date (YYYY-MM-DD) to ensure visits are recorded for the correct day in the user's timezone
       const localDate = new Date().toLocaleDateString('en-CA');

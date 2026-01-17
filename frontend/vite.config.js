@@ -12,6 +12,7 @@ export default defineConfig({
       manifest: {
         name: 'Sahithi Enterprises',
         short_name: 'Sahithi',
+        version: '1.0.0',
         description: 'Sahithi Enterprises Product Catalog',
         theme_color: '#ffffff',
         start_url: '/',

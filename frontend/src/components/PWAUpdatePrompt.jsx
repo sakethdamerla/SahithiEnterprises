@@ -1,4 +1,5 @@
 import { useRegisterSW } from 'virtual:pwa-register/react'
+import { useState, useEffect } from 'react';
 
 /**
  * PWAUpdatePrompt Component
@@ -18,17 +19,67 @@ export function PWAUpdatePrompt() {
         },
     })
 
+    // State to control prompt visibility based on version check
+    const [showPrompt, setShowPrompt] = useState(false);
+
+    useEffect(() => {
+        if (needRefresh) {
+            checkVersion();
+        }
+    }, [needRefresh]);
+
+    const checkVersion = async () => {
+        try {
+            const response = await fetch('/manifest.webmanifest');
+            const manifest = await response.json();
+            const serverVersion = manifest.version;
+            const localVersion = localStorage.getItem('pwaVersion');
+
+            // Show prompt only if version changed or never stored
+            if (serverVersion && serverVersion !== localVersion) {
+                setShowPrompt(true);
+            } else if (!localVersion) {
+                // First time visit or no version stored, but update available.
+                // If we want to be strict, we might only show if we have a prev version.
+                // But usually first time we might want to store it.
+                // However, useRegisterSW needRefresh implies an update to an EXISTING SW.
+                // So we probably have visited before.
+                // Let's safe default to showing if we can't verify version, 
+                // OR we can decide to assume it's a minor update if no version tracking existed.
+                // User request: "only show when updated the pwa and manifest files"
+                // If I just added versioning, localVersion is null. serverVersion is '1.0.0'.
+                // We should probably show it once to 'sync' the version.
+                setShowPrompt(true);
+            }
+        } catch (error) {
+            console.error('Failed to check PWA version:', error);
+            // Fallback: show prompt if check fails (safety net)? Or suppress?
+            // User wants less popups. Let's suppress if we can't verify.
+        }
+    };
+
     // Close the prompt without updating
     const close = () => {
-        setNeedRefresh(false) // toggle this if using state
+        setShowPrompt(false);
+        setNeedRefresh(false);
     }
 
     // Reload the page to activate the new SW
-    const handleUpdate = () => {
+    const handleUpdate = async () => {
+        // Store the new version before updating
+        try {
+            const response = await fetch('/manifest.webmanifest');
+            const manifest = await response.json();
+            if (manifest.version) {
+                localStorage.setItem('pwaVersion', manifest.version);
+            }
+        } catch (e) {
+            console.error("Could not save new version", e);
+        }
         updateServiceWorker(true);
     }
 
-    if (!needRefresh) return null;
+    if (!showPrompt) return null;
 
     return (
         <div className="fixed bottom-4 left-4 right-4 md:right-auto md:left-4 z-[100] animate-in slide-in-from-bottom duration-300">

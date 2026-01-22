@@ -152,6 +152,16 @@ export function ProductCard({ product, onEdit, onDelete, onToggleStock }) {
     handleInterested();
   };
 
+  // Deterministic discount based on product ID
+  const discountPercentage = (() => {
+    if (!product._id) return 10;
+    const sum = product._id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+    // Return a discount between 5% and 20%
+    return 5 + (sum % 16);
+  })();
+
+  const originalPrice = (product.price * (100 / (100 - discountPercentage))).toFixed(2);
+
   return (
     <>
       <div
@@ -178,9 +188,15 @@ export function ProductCard({ product, onEdit, onDelete, onToggleStock }) {
             loading="lazy"
           />
           {/* Category Badge */}
-          <div className="absolute top-2 right-2 px-2 py-0.5 bg-white/90 backdrop-blur-sm rounded-full text-[8px] md:text-[10px] font-semibold text-primary-600 capitalize">
+          <div className="absolute top-2 right-2 px-2 py-0.5 bg-white/90 backdrop-blur-sm rounded-full text-[8px] md:text-[10px] font-semibold text-primary-600 capitalize shadow-sm">
             {product.category}
           </div>
+
+          {/* Discount Badge */}
+          <div className="absolute top-2 left-0 bg-[#FF9933] text-white text-[10px] md:text-xs font-bold px-2 py-0.5 rounded-r-lg shadow-sm z-10">
+            {discountPercentage}% OFF
+          </div>
+
           {/* Out of Stock Overlay */}
           {product.isTemporarilyClosed && (
             <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
@@ -229,9 +245,12 @@ export function ProductCard({ product, onEdit, onDelete, onToggleStock }) {
 
           {/* Price */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 md:gap-3 mt-auto">
-            <span className="text-base md:text-xl font-bold text-primary-600">
-              ₹{product.price.toFixed(2)}
-            </span>
+            <div className="flex flex-col items-start">
+              <span className="text-xs text-gray-400 line-through font-medium">₹{originalPrice}</span>
+              <span className="text-base md:text-xl font-bold text-[#138808]">
+                ₹{product.price.toFixed(2)}
+              </span>
+            </div>
 
             {/* Admin Actions */}
             {isAdmin && (

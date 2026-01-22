@@ -13,16 +13,21 @@ export function CategoryCard({ category, title, description, icon, productCount 
   return (
     <Link
       to={`/category/${category}`}
-      className="card p-6 hover:scale-105 transition-transform duration-300 group"
+      className="card p-6 hover:scale-105 transition-all duration-300 group relative overflow-hidden border border-transparent hover:border-[#FF9933] hover:shadow-xl hover:shadow-[#138808]/10"
     >
-      <div className="flex flex-col items-center text-center space-y-2 md:space-y-4">
+      {/* Republic Day Badge */}
+      <div className="absolute top-0 right-0 bg-gradient-to-l from-[#138808] to-[#138808]/80 text-white text-[10px] md:text-xs font-bold px-3 py-1 rounded-bl-xl shadow-sm z-10">
+        Republic Day Deal 🇮🇳
+      </div>
+
+      <div className="flex flex-col items-center text-center space-y-2 md:space-y-4 pt-2">
         {/* Icon */}
-        <div className="w-12 h-12 md:w-20 md:h-20 bg-primary-100 rounded-full flex items-center justify-center text-2xl md:text-4xl group-hover:bg-primary-200 transition-colors">
+        <div className="w-12 h-12 md:w-20 md:h-20 bg-orange-50 rounded-full flex items-center justify-center text-2xl md:text-4xl group-hover:bg-[#FF9933]/20 transition-colors border-2 border-transparent group-hover:border-[#FF9933]/30">
           {icon}
         </div>
 
         {/* Title */}
-        <h3 className="text-base md:text-xl font-bold text-gray-900 group-hover:text-primary-600 transition-colors">
+        <h3 className="text-base md:text-xl font-bold text-gray-900 group-hover:text-[#000080] transition-colors">
           {title}
         </h3>
 
@@ -39,8 +44,8 @@ export function CategoryCard({ category, title, description, icon, productCount 
         </div>
 
         {/* View Button */}
-        <button className="mt-2 md:mt-4 btn-primary w-full text-xs md:text-base py-1.5 md:py-2">
-          Browse
+        <button className="mt-2 md:mt-4 w-full text-xs md:text-base py-1.5 md:py-2 rounded-lg font-medium text-white bg-[#138808] hover:bg-green-700 transition-colors shadow-sm">
+          Browse Deals
         </button>
       </div>
     </Link>

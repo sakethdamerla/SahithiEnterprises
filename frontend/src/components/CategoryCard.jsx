@@ -13,7 +13,7 @@ export function CategoryCard({ category, title, description, icon, productCount 
   return (
     <Link
       to={`/category/${category}`}
-      className="card p-6 hover:scale-105 transition-all duration-300 group relative overflow-hidden border border-transparent hover:border-[#FF9933] hover:shadow-xl hover:shadow-[#138808]/10"
+      className="card p-4 md:p-6 hover:scale-105 transition-all duration-300 group relative overflow-hidden border border-transparent hover:border-[#FF9933] hover:shadow-xl hover:shadow-[#138808]/10"
     >
       {/* Republic Day Badge */}
       <div className="absolute top-0 right-0 bg-gradient-to-l from-[#138808] to-[#138808]/80 text-white text-[10px] md:text-xs font-bold px-3 py-1 rounded-bl-xl shadow-sm z-10">
@@ -44,7 +44,7 @@ export function CategoryCard({ category, title, description, icon, productCount 
         </div>
 
         {/* View Button */}
-        <button className="mt-2 md:mt-4 w-full text-xs md:text-base py-1.5 md:py-2 rounded-lg font-medium text-white bg-[#138808] hover:bg-green-700 transition-colors shadow-sm">
+        <button className="mt-2 md:mt-4 w-full text-xs md:text-base py-2 rounded-lg font-medium text-white bg-[#138808] hover:bg-green-700 transition-colors shadow-sm">
           Browse Deals
         </button>
       </div>

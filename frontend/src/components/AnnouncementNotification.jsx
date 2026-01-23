@@ -58,32 +58,32 @@ export function AnnouncementPopup() {
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 pointer-events-none">
             <div
-                className="bg-white rounded-2xl shadow-2xl border border-gray-100 max-w-md w-full pointer-events-auto transform transition-all animate-in slide-in-from-bottom duration-500 relative overflow-hidden"
+                className="bg-white/95 backdrop-blur-xl rounded-2xl shadow-[0_30px_60px_-15px_rgba(0,0,0,0.3)] border border-white/20 max-w-md w-full pointer-events-auto transform transition-all animate-in zoom-in-95 slide-in-from-bottom-10 duration-500 relative overflow-hidden"
             >
                 {/* Decorative header background */}
-                <div className="h-2 bg-gradient-to-r from-primary-400 to-primary-600 w-full absolute top-0 left-0"></div>
+                <div className="h-1.5 bg-gradient-to-r from-primary-400 via-primary-500 to-primary-600 w-full absolute top-0 left-0"></div>
 
-                <div className="p-6">
-                    <div className="flex items-start justify-between mb-4">
-                        <div className="flex items-center gap-2">
-                            <span className="flex h-3 w-3 relative">
+                <div className="p-6 md:p-8">
+                    <div className="flex items-start justify-between mb-5">
+                        <div className="flex items-center gap-2.5">
+                            <span className="flex h-2.5 w-2.5 relative">
                                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                                <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
+                                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500"></span>
                             </span>
-                            <span className="text-xs font-bold tracking-wider text-primary-600 uppercase">New Announcement</span>
+                            <span className="text-[11px] font-bold tracking-widest text-primary-600 uppercase bg-primary-50 px-2 py-1 rounded-md border border-primary-100">New Updates</span>
                         </div>
                         <button
                             onClick={handleDismiss}
-                            className="text-gray-400 hover:text-gray-600 transition-colors p-1"
+                            className="text-gray-400 hover:text-gray-600 hover:bg-gray-100/50 rounded-full p-2 transition-all"
                             aria-label="Close"
                         >
                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
                         </button>
                     </div>
 
-                    <h3 className="text-xl font-bold text-gray-900 mb-2">{latestAnnouncement.title}</h3>
+                    <h3 className="text-2xl font-bold text-gray-900 mb-3 tracking-tight">{latestAnnouncement.title}</h3>
 
-                    <div className="prose prose-sm text-gray-600 mb-6 max-h-40 overflow-y-auto custom-scrollbar">
+                    <div className="prose prose-sm text-gray-600 mb-8 max-h-48 overflow-y-auto custom-scrollbar leading-relaxed">
                         <p className="whitespace-pre-wrap">{latestAnnouncement.message}</p>
                     </div>
 
@@ -114,9 +114,9 @@ export function AnnouncementPopup() {
                                     }
                                 }
                             }}
-                            className="w-full bg-primary-600 text-white py-3 rounded-xl font-semibold hover:bg-primary-700 transition-all shadow-lg shadow-primary-600/20 active:scale-95"
+                            className="w-full bg-gray-900 text-white py-3.5 rounded-xl font-bold hover:bg-black transition-all shadow-lg shadow-gray-900/10 active:scale-95 text-sm tracking-wide"
                         >
-                            Got it
+                            Okay, Got it
                         </button>
                     </div>
                 </div>

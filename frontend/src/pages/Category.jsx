@@ -14,18 +14,10 @@ export function Category() {
   const { getProductsByCategory, isLoading } = useProducts();
   const navigate = useNavigate();
 
-  const [searchParams] = useSearchParams();
-  const search = searchParams.get('search')?.toLowerCase().trim() || '';
   const [sortBy, setSortBy] = useState('newest'); // 'newest', 'price_asc', 'price_desc'
 
   // Get products for this category
-  let categoryProducts = getProductsByCategory(slug).filter((p) => {
-    if (!search) return true;
-    return (
-      p.title.toLowerCase().includes(search) ||
-      p.description.toLowerCase().includes(search)
-    );
-  });
+  let categoryProducts = getProductsByCategory(slug);
 
   // Sort products
   if (sortBy === 'price_asc') {

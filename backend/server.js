@@ -6,6 +6,9 @@ import { Product } from './models/Product.js';
 import { Interest } from './models/Interest.js';
 import { Traffic } from './models/Traffic.js';
 import { Announcement } from './models/Announcement.js';
+import { User } from './models/User.js';
+import { protect, superadminOnly } from './middleware/auth.js';
+import jwt from 'jsonwebtoken';
 
 dotenv.config();
 
@@ -61,6 +64,136 @@ app.post('/api/record-visit', async (req, res) => {
     } catch (error) {
         console.error('Error recording visit:', error);
         res.status(500).json({ message: 'Error recording visit' });
+    }
+});
+
+// --- Auth Endpoints ---
+
+// Login
+app.post('/api/login', async (req, res) => {
+    try {
+        const { username, password } = req.body;
+        const user = await User.findOne({ username });
+
+        if (user && (await user.comparePassword(password))) {
+            const token = jwt.sign(
+                { id: user._id, role: user.role },
+                process.env.JWT_SECRET || 'your_default_secret_key',
+                { expiresIn: '30d' }
+            );
+
+            res.json({
+                _id: user._id,
+                username: user.username,
+                role: user.role,
+                permissions: user.permissions,
+                token
+            });
+        } else {
+            res.status(401).json({ message: 'Invalid username or password' });
+        }
+    } catch (error) {
+        console.error('Login Error:', error);
+        res.status(500).json({ message: error.message });
+    }
+});
+
+// Create Admin (Superadmin Only)
+app.post('/api/admin/create', protect, superadminOnly, async (req, res) => {
+    try {
+        const { username, password } = req.body;
+
+        const userExists = await User.findOne({ username });
+        if (userExists) {
+            return res.status(400).json({ message: 'User already exists' });
+        }
+
+        const user = await User.create({
+            username,
+            password,
+            role: 'admin'
+        });
+
+        if (user) {
+            res.status(201).json({
+                _id: user._id,
+                username: user.username,
+                role: user.role
+            });
+        } else {
+            res.status(400).json({ message: 'Invalid user data' });
+        }
+    } catch (error) {
+        console.error('Create Admin Error:', error);
+        res.status(500).json({ message: error.message });
+    }
+});
+
+// List Admins (Superadmin Only)
+app.get('/api/admin/list', protect, superadminOnly, async (req, res) => {
+    try {
+        const admins = await User.find({ role: 'admin' }).select('-password');
+        res.json(admins);
+    } catch (error) {
+        console.error('List Admins Error:', error);
+        res.status(500).json({ message: error.message });
+    }
+});
+
+// Update Admin Permissions (Superadmin Only)
+app.patch('/api/admin/:id/permissions', protect, superadminOnly, async (req, res) => {
+    try {
+        const { permissions } = req.body;
+        const user = await User.findByIdAndUpdate(
+            req.params.id,
+            { permissions },
+            { new: true }
+        ).select('-password');
+
+        if (!user) {
+            return res.status(404).json({ message: 'Admin not found' });
+        }
+
+        res.json(user);
+    } catch (error) {
+        console.error('Update Permissions Error:', error);
+        res.status(500).json({ message: error.message });
+    }
+});
+
+// Update Admin (Superadmin Only)
+app.put('/api/admin/:id', protect, superadminOnly, async (req, res) => {
+    try {
+        const { username, password, permissions } = req.body;
+        const admin = await User.findById(req.params.id);
+
+        if (!admin) return res.status(404).json({ message: 'Admin not found' });
+
+        if (username) admin.username = username;
+        if (password) admin.password = password; // Will be hashed by pre-save hook
+        if (permissions) admin.permissions = permissions;
+
+        await admin.save();
+
+        const adminObj = admin.toObject();
+        delete adminObj.password;
+
+        res.json(adminObj);
+    } catch (error) {
+        console.error('Update Admin Error:', error);
+        res.status(500).json({ message: 'Error updating admin' });
+    }
+});
+
+// Delete Admin (Superadmin Only)
+app.delete('/api/admin/:id', protect, superadminOnly, async (req, res) => {
+    try {
+        const admin = await User.findByIdAndDelete(req.params.id);
+        if (!admin) return res.status(404).json({ message: 'Admin not found' });
+        res.json({ message: 'Admin deleted successfully' });
+    } catch (error) {
+        console.error('Delete Admin Error:', error);
+        res.status(500).json({ message: 'Error deleting admin' });
     }
 });
 

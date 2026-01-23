@@ -13,24 +13,57 @@ export function AuthProvider({ children }) {
   const [isAdmin, setIsAdmin] = useLocalStorage('isAdmin', false);
   const [adminUser, setAdminUser] = useLocalStorage('adminUser', null);
 
+  // Invalidate old sessions
+  useEffect(() => {
+    const AUTH_VERSION = 'v2'; // Increment this to force logout
+    const storedVersion = localStorage.getItem('auth_version');
+
+    if (storedVersion !== AUTH_VERSION) {
+      if (isAdmin) {
+        console.log("Invalidating old session");
+        setIsAdmin(false);
+        setAdminUser(null);
+      }
+      localStorage.setItem('auth_version', AUTH_VERSION);
+    }
+  }, []);
+
   /**
-   * Login function - validates credentials and sets admin state
+   * Login function - validates credentials via backend API
    * @param {string} username - Admin username
    * @param {string} password - Admin password
-   * @returns {boolean} - True if login successful, false otherwise
+   * @returns {Object} - Result object with success status and message
    */
-  const login = (username, password) => {
-    // Hard-coded credentials for client-side demo
-    // TODO: Replace with real backend authentication (JWT/sessions)
-    const validUsername = 'admin';
-    const validPassword = 'admin123';
+  const login = async (username, password) => {
+    try {
+      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+      const response = await fetch(`${API_URL}/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ username, password }),
+      });
 
-    if (username === validUsername && password === validPassword) {
-      setIsAdmin(true);
-      setAdminUser({ username, loginTime: new Date().toISOString() });
-      return true;
+      const data = await response.json();
+
+      if (response.ok) {
+        setIsAdmin(true);
+        setAdminUser({
+          username: data.username,
+          role: data.role,
+          permissions: data.permissions,
+          token: data.token,
+          loginTime: new Date().toISOString()
+        });
+        return { success: true };
+      } else {
+        return { success: false, message: data.message || 'Invalid credentials' };
+      }
+    } catch (error) {
+      console.error('Login Error:', error);
+      return { success: false, message: 'Server error or connection failed' };
     }
-    return false;
   };
 
   /**

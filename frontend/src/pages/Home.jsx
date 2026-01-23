@@ -89,12 +89,12 @@ export function Home() {
 
       {isAdmin && (
         <div className="mb-6">
-          <Link
+          {/* <Link
             to="/admin"
             className="w-full md:w-auto block md:inline-block text-center px-6 py-3 bg-secondary-600 text-white rounded-xl font-bold shadow-lg hover:bg-secondary-700 transition-transform transform hover:scale-105"
           >
             Go to Admin Dashboard
-          </Link>
+          </Link> */}
         </div>
       )}
 

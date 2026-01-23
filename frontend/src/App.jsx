@@ -11,6 +11,7 @@ import './index.css';
 import { Footer } from './components/Footer';
 import { PWAUpdatePrompt } from './components/PWAUpdatePrompt';
 import { AnnouncementPopup } from './components/AnnouncementNotification';
+import { NotificationPersistentPrompt } from './components/NotificationPersistentPrompt';
 
 // Lazy load pages
 const Home = lazy(() => import('./pages/Home').then(module => ({ default: module.Home })));
@@ -73,7 +74,7 @@ function AppLayout() {
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50 text-gray-900">
-      <Header />
+      {!location.pathname.startsWith('/admin/login') && <Header />}
 
       <main className="flex-1">
         <Suspense fallback={<div className="min-h-[50vh]" />}>
@@ -95,10 +96,11 @@ function AppLayout() {
         </Suspense>
       </main>
 
-      <Footer />
+      {!location.pathname.startsWith('/admin') && <Footer />}
 
       <PWAUpdatePrompt />
       <AnnouncementPopup />
+      <NotificationPersistentPrompt />
       <PWAInstallPrompt />
     </div>
   );

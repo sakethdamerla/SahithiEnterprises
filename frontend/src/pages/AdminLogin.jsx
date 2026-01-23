@@ -14,16 +14,17 @@ export function AdminLogin() {
   const [error, setError] = useState('');
 
   if (isAdmin) {
-    return <Navigate to="/admin" replace />;
+    return <Navigate to="/" replace />;
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    const success = login(username.trim(), password.trim());
-    if (success) {
-      navigate('/admin', { replace: true });
+    setError('');
+    const result = await login(username.trim(), password.trim());
+    if (result.success) {
+      navigate('/', { replace: true });
     } else {
-      setError('Invalid credentials.');
+      setError(result.message || 'Invalid credentials.');
     }
   };
 

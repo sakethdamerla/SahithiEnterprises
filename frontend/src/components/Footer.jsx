@@ -30,7 +30,7 @@ export function Footer() {
               </li>
               <li>
                 <Link to="/category/tyres" className="hover:text-white transition-colors flex items-center gap-2">
-                  <span className="text-primary-500">›</span> Tyre Retreading & Sales
+                  <span className="text-primary-500">›</span> Tyre Sales & Fittings
                 </Link>
               </li>
               <li>

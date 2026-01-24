@@ -54,12 +54,61 @@ export function NotificationPersistentPrompt() {
         const permission = await Notification.requestPermission();
         if (permission === 'granted') {
             setShowPrompt(false);
-            // Optional: Register for push if needed here
             console.log('Notification permission granted.');
+            await subscribeUserToPush();
         } else {
             console.log('Notification permission:', permission);
         }
     };
+
+    const subscribeUserToPush = async () => {
+        if (!('serviceWorker' in navigator)) return;
+
+        try {
+            // Wait for SW to be ready
+            const registration = await navigator.serviceWorker.ready;
+
+            // Public Key from backend (hardcoded here to match server.js for now, ideally fetched)
+            // Note: In production this should come from env or API
+            const VAPID_PUBLIC_KEY = 'BAyPKzO7w9lvfsg-oITsS4QFvFw1M9rRYAFoVtKuxCS7mJYKOH6M4UgWMUIV9vEBjdTZF7-A-fZZNq4oitiWNcg';
+
+            const subscription = await registration.pushManager.subscribe({
+                userVisibleOnly: true,
+                applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
+            });
+
+            console.log('User is subscribed:', subscription);
+
+            // Send subscription to backend
+            const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+            await fetch(`${API_URL}/subscribe`, {
+                method: 'POST',
+                body: JSON.stringify(subscription),
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+
+        } catch (error) {
+            console.error('Failed to subscribe the user: ', error);
+        }
+    };
+
+    // Utility function to convert VAPID key
+    function urlBase64ToUint8Array(base64String) {
+        const padding = '='.repeat((4 - base64String.length % 4) % 4);
+        const base64 = (base64String + padding)
+            .replace(/-/g, '+')
+            .replace(/_/g, '/');
+
+        const rawData = window.atob(base64);
+        const outputArray = new Uint8Array(rawData.length);
+
+        for (let i = 0; i < rawData.length; ++i) {
+            outputArray[i] = rawData.charCodeAt(i);
+        }
+        return outputArray;
+    }
 
     const handleDismiss = () => {
         setShowPrompt(false);

@@ -98,6 +98,26 @@ app.post('/api/login', async (req, res) => {
     }
 });
 
+// Get Current Admin User (For Session Persist/Refresh)
+app.get('/api/auth/me', protect, async (req, res) => {
+    try {
+        const user = await User.findById(req.user.id).select('-password');
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+        res.json({
+            _id: user._id,
+            username: user.username,
+            role: user.role,
+            permissions: user.permissions,
+            // Don't need to send token back, client already has it
+        });
+    } catch (error) {
+        console.error('Auth Me Error:', error);
+        res.status(500).json({ message: error.message });
+    }
+});
+
 // Create Admin (Superadmin Only)
 app.post('/api/admin/create', protect, superadminOnly, async (req, res) => {
     try {

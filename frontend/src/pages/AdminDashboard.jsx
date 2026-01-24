@@ -57,6 +57,11 @@ export function AdminDashboard() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [selectedAdmin, setSelectedAdmin] = useState(null);
   const [isPermissionModalOpen, setIsPermissionModalOpen] = useState(false);
+  const [loadingStates, setLoadingStates] = useState({}); // Track loading state for specific IDs/Actions
+
+  const setActionLoading = (id, isLoading) => {
+    setLoadingStates(prev => ({ ...prev, [id]: isLoading }));
+  };
 
   useEffect(() => {
     if (activeView === 'traffic') {
@@ -122,16 +127,20 @@ export function AdminDashboard() {
     if (!interests.length) return [];
 
     const now = new Date();
-    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+    // Normalize "today" to start of day 00:00:00
+    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+    const oneDay = 24 * 60 * 60 * 1000;
 
     return interests.filter(interest => {
       const interestDate = new Date(interest.date).getTime();
 
       switch (dateFilter) {
         case 'today':
-          return interestDate >= today;
+          return interestDate >= todayStart;
+        case 'yesterday':
+          return interestDate >= (todayStart - oneDay) && interestDate < todayStart;
         case '7days':
-          const sevenDaysAgo = today - (7 * 24 * 60 * 60 * 1000);
+          const sevenDaysAgo = todayStart - (7 * oneDay);
           return interestDate >= sevenDaysAgo;
         case 'all':
         default:
@@ -202,6 +211,7 @@ export function AdminDashboard() {
 
   const handleAnnouncementSubmit = async (e) => {
     e.preventDefault();
+    setActionLoading('announcement-submit', true);
     const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
     try {
       const res = await fetch(`${API_URL}/announcements`, {
@@ -218,22 +228,28 @@ export function AdminDashboard() {
       }
     } catch (error) {
       console.error("Error creating announcement", error);
+    } finally {
+      setActionLoading('announcement-submit', false);
     }
   };
 
   const deleteAnnouncement = async (id) => {
     if (!confirm("Delete this announcement?")) return;
+    setActionLoading(`del-ann-${id}`, true);
     const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
     try {
       await fetch(`${API_URL}/announcements/${id}`, { method: 'DELETE' });
       setAnnouncements(prev => prev.filter(a => a._id !== id));
     } catch (error) {
       console.error("Error deleting", error);
+    } finally {
+      setActionLoading(`del-ann-${id}`, false);
     }
   };
 
   const deleteAdmin = async (id) => {
     if (!confirm("Are you sure you want to permanently delete this admin?")) return;
+    setActionLoading(`del-admin-${id}`, true);
     const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
     try {
       const res = await fetch(`${API_URL}/admin/${id}`, {
@@ -249,11 +265,14 @@ export function AdminDashboard() {
       }
     } catch (error) {
       console.error("Error deleting admin", error);
+    } finally {
+      setActionLoading(`del-admin-${id}`, false);
     }
   };
 
   const handleAdminSubmit = async (e) => {
     e.preventDefault();
+    setActionLoading('admin-submit', true);
     const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
     // If updating existing admin
@@ -282,6 +301,8 @@ export function AdminDashboard() {
         }
       } catch (error) {
         console.error("Error updating admin", error);
+      } finally {
+        setActionLoading('admin-submit', false);
       }
       return;
     }
@@ -306,17 +327,31 @@ export function AdminDashboard() {
       }
     } catch (error) {
       console.error("Error creating admin", error);
+    } finally {
+      setActionLoading('admin-submit', false);
     }
   };
 
   const togglePermission = async (adminId, permissionKey) => {
+    if (loadingStates[`perm-${adminId}-${permissionKey}`]) return; // Prevent double click
+
     const adminToUpdate = admins.find(a => a._id === adminId);
     if (!adminToUpdate) return;
 
+    // Optimistic UI Update
+    const oldPermissions = { ...adminToUpdate.permissions };
     const newPermissions = {
-      ...adminToUpdate.permissions,
-      [permissionKey]: !adminToUpdate.permissions[permissionKey]
+      ...oldPermissions,
+      [permissionKey]: !oldPermissions[permissionKey]
     };
+
+    // Update local state immediately for responsiveness
+    setAdmins(prev => prev.map(a => a._id === adminId ? { ...a, permissions: newPermissions } : a));
+    if (selectedAdmin?._id === adminId) {
+      setSelectedAdmin(prev => ({ ...prev, permissions: newPermissions }));
+    }
+
+    setActionLoading(`perm-${adminId}-${permissionKey}`, true);
 
     const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
     try {
@@ -331,13 +366,27 @@ export function AdminDashboard() {
 
       if (res.ok) {
         const updatedAdmin = await res.json();
+        // Sync with server response
         setAdmins(prev => prev.map(a => a._id === adminId ? updatedAdmin : a));
         if (selectedAdmin?._id === adminId) {
           setSelectedAdmin(updatedAdmin);
         }
+      } else {
+        // Revert on failure
+        setAdmins(prev => prev.map(a => a._id === adminId ? { ...a, permissions: oldPermissions } : a));
+        if (selectedAdmin?._id === adminId) {
+          setSelectedAdmin(prev => ({ ...prev, permissions: oldPermissions }));
+        }
       }
     } catch (error) {
       console.error("Error updating permissions", error);
+      // Revert on failure
+      setAdmins(prev => prev.map(a => a._id === adminId ? { ...a, permissions: oldPermissions } : a));
+      if (selectedAdmin?._id === adminId) {
+        setSelectedAdmin(prev => ({ ...prev, permissions: oldPermissions }));
+      }
+    } finally {
+      setActionLoading(`perm-${adminId}-${permissionKey}`, false);
     }
   };
 
@@ -400,20 +449,30 @@ export function AdminDashboard() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const handleDelete = (id) => {
+  const handleDelete = async (id) => {
     if (window.confirm('Are you sure you want to delete this product?')) {
-      deleteProduct(id);
-      if (formState.id === id) {
-        setFormState(emptyForm);
+      setActionLoading(`del-prod-${id}`, true);
+      try {
+        await deleteProduct(id);
+        if (formState.id === id) {
+          setFormState(emptyForm);
+        }
+      } finally {
+        setActionLoading(`del-prod-${id}`, false);
       }
     }
   };
 
-  const handleStockToggle = (product) => {
-    updateProduct(product._id, {
-      ...product,
-      isTemporarilyClosed: !product.isTemporarilyClosed
-    });
+  const handleStockToggle = async (product) => {
+    setActionLoading(`stock-${product._id}`, true);
+    try {
+      await updateProduct(product._id, {
+        ...product,
+        isTemporarilyClosed: !product.isTemporarilyClosed
+      });
+    } finally {
+      setActionLoading(`stock-${product._id}`, false);
+    }
   };
 
   const filteredProducts = products.filter((p) => {
@@ -629,20 +688,6 @@ export function AdminDashboard() {
 
                   {/* Product list */}
                   <section className="space-y-4 md:space-y-6">
-                    <button
-                      onClick={() => {
-                        setFormState(emptyForm);
-                        setSelectedFile(null);
-                        setIsFormOpen(true);
-                      }}
-                      className="w-full sm:w-auto py-2 px-6 btn-primary flex items-center justify-center gap-2 mb-4 shadow-lg shadow-primary-600/20 text-sm font-medium"
-                    >
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                        <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
-                      </svg>
-                      Add New Product
-                    </button>
-
                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                       <div>
                         <h3 className="text-lg md:text-xl font-semibold text-gray-900">Products</h3>
@@ -650,6 +695,19 @@ export function AdminDashboard() {
                           {filteredProducts.length} item(s) • Stored in Database
                         </p>
                       </div>
+                      <button
+                        onClick={() => {
+                          setFormState(emptyForm);
+                          setSelectedFile(null);
+                          setIsFormOpen(true);
+                        }}
+                        className="w-full sm:w-auto py-2 px-6 btn-primary flex items-center justify-center gap-2 mb-4 sm:mb-0 shadow-lg shadow-primary-600/20 text-sm font-medium"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                          <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
+                        </svg>
+                        Add New Product
+                      </button>
                     </div>
 
                     {
@@ -692,6 +750,21 @@ export function AdminDashboard() {
                     {/* To make this safe, I will just append the traffic view logic */}
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
                       <h2 className="text-lg md:text-xl font-bold">Interested Users</h2>
+                      <div className="relative">
+                        <select
+                          value={dateFilter}
+                          onChange={(e) => setDateFilter(e.target.value)}
+                          className="appearance-none bg-gray-50 border border-gray-200 text-gray-700 py-2 pl-4 pr-8 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent cursor-pointer hover:bg-gray-100 transition-colors"
+                        >
+                          <option value="today">Today</option>
+                          <option value="yesterday">Yesterday</option>
+                          <option value="7days">Last 7 Days</option>
+                          <option value="all">Overall</option>
+                        </select>
+                        <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-500">
+                          <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" /></svg>
+                        </div>
+                      </div>
                     </div>
 
                     {/* Mobile Card View for Interests */}
@@ -822,8 +895,12 @@ export function AdminDashboard() {
                               >
                                 Cancel
                               </button>
-                              <button type="submit" className="btn-primary py-2 px-4 text-sm">
-                                Post Announcement
+                              <button
+                                type="submit"
+                                className="btn-primary py-2 px-4 text-sm flex items-center gap-2"
+                                disabled={loadingStates['announcement-submit']}
+                              >
+                                {loadingStates['announcement-submit'] ? 'Posting...' : 'Post Announcement'}
                               </button>
                             </div>
                           </form>
@@ -846,9 +923,21 @@ export function AdminDashboard() {
                               </div>
                               <button
                                 onClick={() => deleteAnnouncement(item._id)}
-                                className="text-red-500 hover:bg-red-50 p-2 rounded-lg transition-colors self-end sm:self-start"
+                                // className="text-red-500 hover:bg-red-50 p-2 rounded-lg transition-colors self-end sm:self-start"
+                                className={`p-2 rounded-lg transition-colors self-end sm:self-start ${loadingStates[`del-ann-${item._id}`]
+                                  ? 'text-gray-300 cursor-not-allowed'
+                                  : 'text-red-500 hover:bg-red-50'
+                                  }`}
+                                disabled={loadingStates[`del-ann-${item._id}`]}
                               >
-                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                                {loadingStates[`del-ann-${item._id}`] ? (
+                                  <svg className="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                  </svg>
+                                ) : (
+                                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                                )}
                               </button>
                             </div>
                             <p className="text-gray-600 mt-2 whitespace-pre-wrap text-sm">{item.message}</p>
@@ -911,8 +1000,12 @@ export function AdminDashboard() {
                               >
                                 Cancel
                               </button>
-                              <button type="submit" className="btn-primary py-2 px-4 text-sm">
-                                {selectedAdmin ? 'Update Admin' : 'Create Admin'}
+                              <button
+                                type="submit"
+                                className="btn-primary py-2 px-4 text-sm flex items-center gap-2"
+                                disabled={loadingStates['admin-submit']}
+                              >
+                                {loadingStates['admin-submit'] ? 'Processing...' : (selectedAdmin ? 'Update Admin' : 'Create Admin')}
                               </button>
                             </div>
                           </form>
@@ -951,10 +1044,21 @@ export function AdminDashboard() {
                               </button>
                               <button
                                 onClick={() => deleteAdmin(admin._id)}
-                                className="p-1.5 text-gray-500 hover:text-red-600 hover:bg-white rounded-lg transition-colors"
+                                disabled={loadingStates[`del-admin-${admin._id}`]}
+                                className={`p-1.5 rounded-lg transition-colors ${loadingStates[`del-admin-${admin._id}`]
+                                  ? 'text-gray-300 cursor-not-allowed'
+                                  : 'text-gray-500 hover:text-red-600 hover:bg-white'
+                                  }`}
                                 title="Delete Admin"
                               >
-                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                                {loadingStates[`del-admin-${admin._id}`] ? (
+                                  <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                  </svg>
+                                ) : (
+                                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                                )}
                               </button>
                             </div>
                           </div>
@@ -1018,14 +1122,23 @@ export function AdminDashboard() {
                                   className={`
                                 relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none
                                 ${selectedAdmin.permissions?.[perm.key] ? 'bg-primary-600' : 'bg-gray-200'}
+                                ${loadingStates[`perm-${selectedAdmin._id}-${perm.key}`] ? 'opacity-50 cursor-not-allowed' : ''}
                               `}
+                                  disabled={loadingStates[`perm-${selectedAdmin._id}-${perm.key}`]}
                                 >
-                                  <span
-                                    className={`
-                                  inline-block h-4 w-4 transform rounded-full bg-white transition-transform
-                                  ${selectedAdmin.permissions?.[perm.key] ? 'translate-x-6' : 'translate-x-1'}
-                                `}
-                                  />
+                                  {loadingStates[`perm-${selectedAdmin._id}-${perm.key}`] ? (
+                                    <svg className="animate-spin h-3 w-3 absolute left-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                    </svg>
+                                  ) : (
+                                    <span
+                                      className={`
+                                      inline-block h-4 w-4 transform rounded-full bg-white transition-transform
+                                      ${selectedAdmin.permissions?.[perm.key] ? 'translate-x-6' : 'translate-x-1'}
+                                    `}
+                                    />
+                                  )}
                                 </button>
                               </div>
                             ))}

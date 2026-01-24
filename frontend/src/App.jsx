@@ -66,7 +66,7 @@ function AppLayout() {
         })
         .catch(err => console.error("Error recording visit", err));
     }
-  }, []);
+  }, [isAdmin]);
 
   // if (isLoading) {
   //   return <Loader />;

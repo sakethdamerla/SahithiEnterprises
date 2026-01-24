@@ -13,19 +13,54 @@ export function AuthProvider({ children }) {
   const [isAdmin, setIsAdmin] = useLocalStorage('isAdmin', false);
   const [adminUser, setAdminUser] = useLocalStorage('adminUser', null);
 
-  // Invalidate old sessions
+  // Invalidate old sessions and check auth on mount
   useEffect(() => {
-    const AUTH_VERSION = 'v2'; // Increment this to force logout
-    const storedVersion = localStorage.getItem('auth_version');
-
-    if (storedVersion !== AUTH_VERSION) {
-      if (isAdmin) {
-        console.log("Invalidating old session");
-        setIsAdmin(false);
-        setAdminUser(null);
+    const checkAuth = async () => {
+      // 1. Version Check
+      const AUTH_VERSION = 'v2';
+      const storedVersion = localStorage.getItem('auth_version');
+      if (storedVersion !== AUTH_VERSION) {
+        if (isAdmin) {
+          console.log("Invalidating old session version");
+          setIsAdmin(false);
+          setAdminUser(null);
+        }
+        localStorage.setItem('auth_version', AUTH_VERSION);
+        return;
       }
-      localStorage.setItem('auth_version', AUTH_VERSION);
-    }
+
+      // 2. Token Validity Check & Permission Refresh
+      if (isAdmin && adminUser?.token) {
+        try {
+          const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+          const res = await fetch(`${API_URL}/auth/me`, {
+            headers: {
+              'Authorization': `Bearer ${adminUser.token}`
+            }
+          });
+
+          if (res.ok) {
+            const freshUserData = await res.json();
+            // Preserve the token, update everything else (permissions, role, etc)
+            setAdminUser(prev => ({
+              ...prev,
+              ...freshUserData,
+              // Ensure token isn't overwritten if backend doesn't send it (it usually doesn't for /me)
+              token: prev.token
+            }));
+          } else {
+            // Token invalid or user deleted
+            console.warn("Session invalid, logging out");
+            logout();
+          }
+        } catch (error) {
+          console.error("Auth check failed:", error);
+          // Optional: decide if you want to logout on connection error or keep offline session
+        }
+      }
+    };
+
+    checkAuth();
   }, []);
 
   /**

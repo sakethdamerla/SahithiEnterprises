@@ -7,6 +7,8 @@ import { Interest } from './models/Interest.js';
 import { Traffic } from './models/Traffic.js';
 import { Announcement } from './models/Announcement.js';
 import { User } from './models/User.js';
+import { Category } from './models/Category.js';
+import { Offer } from './models/Offer.js';
 import { protect, superadminOnly } from './middleware/auth.js';
 import jwt from 'jsonwebtoken';
 
@@ -442,6 +444,162 @@ app.post('/api/announcements', async (req, res) => {
 });
 
 // Delete announcement
+// --- Category Endpoints ---
+
+// Get all categories
+app.get('/api/categories', async (req, res) => {
+    try {
+        const categories = await Category.find().sort({ order: 1 });
+        res.json(categories);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
+// Create Category (Superadmin Only)
+app.post('/api/categories', protect, superadminOnly, upload.single('image'), async (req, res) => {
+    try {
+        const categoryData = req.body;
+        if (req.file) {
+            categoryData.imageUrl = req.file.path;
+            categoryData.imagePublicId = req.file.filename;
+        }
+
+        const newCategory = new Category(categoryData);
+        const savedCategory = await newCategory.save();
+        res.status(201).json(savedCategory);
+    } catch (error) {
+        console.error('Create Category Error:', error);
+        // If save fails but image was uploaded, delete it
+        if (req.file) {
+            await cloudinary.uploader.destroy(req.file.filename);
+        }
+        res.status(400).json({ message: error.message });
+    }
+});
+
+// Update Category
+app.put('/api/categories/:id', protect, superadminOnly, upload.single('image'), async (req, res) => {
+    try {
+        const category = await Category.findById(req.params.id);
+        if (!category) return res.status(404).json({ message: 'Category not found' });
+
+        const updates = req.body;
+
+        if (req.file) {
+            // Delete old image if exists
+            if (category.imagePublicId) {
+                await cloudinary.uploader.destroy(category.imagePublicId);
+            }
+            updates.imageUrl = req.file.path;
+            updates.imagePublicId = req.file.filename;
+        }
+
+        const updatedCategory = await Category.findByIdAndUpdate(req.params.id, updates, { new: true });
+        res.json(updatedCategory);
+    } catch (error) {
+        console.error('Update Category Error:', error);
+        if (req.file) {
+            await cloudinary.uploader.destroy(req.file.filename);
+        }
+        res.status(400).json({ message: error.message });
+    }
+});
+
+// Delete Category
+app.delete('/api/categories/:id', protect, superadminOnly, async (req, res) => {
+    try {
+        const category = await Category.findById(req.params.id);
+        if (!category) return res.status(404).json({ message: 'Category not found' });
+
+        if (category.imagePublicId) {
+            await cloudinary.uploader.destroy(category.imagePublicId);
+        }
+
+        await Category.findByIdAndDelete(req.params.id);
+        res.json({ message: 'Category deleted' });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
+// --- Offer Endpoints ---
+
+// Get all offers
+app.get('/api/offers', async (req, res) => {
+    try {
+        const offers = await Offer.find().sort({ order: 1 });
+        res.json(offers);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
+// Create Offer (Superadmin Only)
+app.post('/api/offers', protect, superadminOnly, upload.single('image'), async (req, res) => {
+    try {
+        const offerData = req.body;
+        if (req.file) {
+            offerData.imageUrl = req.file.path;
+            offerData.imagePublicId = req.file.filename;
+        }
+
+        const newOffer = new Offer(offerData);
+        const savedOffer = await newOffer.save();
+        res.status(201).json(savedOffer);
+    } catch (error) {
+        console.error('Create Offer Error:', error);
+        if (req.file) {
+            await cloudinary.uploader.destroy(req.file.filename);
+        }
+        res.status(400).json({ message: error.message });
+    }
+});
+
+// Update Offer
+app.put('/api/offers/:id', protect, superadminOnly, upload.single('image'), async (req, res) => {
+    try {
+        const offer = await Offer.findById(req.params.id);
+        if (!offer) return res.status(404).json({ message: 'Offer not found' });
+
+        const updates = req.body;
+
+        if (req.file) {
+            if (offer.imagePublicId) {
+                await cloudinary.uploader.destroy(offer.imagePublicId);
+            }
+            updates.imageUrl = req.file.path;
+            updates.imagePublicId = req.file.filename;
+        }
+
+        const updatedOffer = await Offer.findByIdAndUpdate(req.params.id, updates, { new: true });
+        res.json(updatedOffer);
+    } catch (error) {
+        console.error('Update Offer Error:', error);
+        if (req.file) {
+            await cloudinary.uploader.destroy(req.file.filename);
+        }
+        res.status(400).json({ message: error.message });
+    }
+});
+
+// Delete Offer
+app.delete('/api/offers/:id', protect, superadminOnly, async (req, res) => {
+    try {
+        const offer = await Offer.findById(req.params.id);
+        if (!offer) return res.status(404).json({ message: 'Offer not found' });
+
+        if (offer.imagePublicId) {
+            await cloudinary.uploader.destroy(offer.imagePublicId);
+        }
+
+        await Offer.findByIdAndDelete(req.params.id);
+        res.json({ message: 'Offer deleted' });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
 app.delete('/api/announcements/:id', async (req, res) => {
     try {
         await Announcement.findByIdAndDelete(req.params.id);

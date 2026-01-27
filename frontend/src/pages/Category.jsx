@@ -1,7 +1,9 @@
-import { useState } from 'react';
+import { OfferCard } from '../components/OfferCard';
+import { useState, useEffect } from 'react';
 import { useParams, Link, useSearchParams, useNavigate } from 'react-router-dom';
 import { ProductCard } from '../components/ProductCard';
 import { useProducts } from '../context/ProductsContext';
+import { useAuth } from '../context/AuthContext';
 
 import { getCategoryInfo } from '../utils/categoryData.jsx';
 import { ProductCardSkeleton } from '../components/Skeleton';
@@ -12,9 +14,19 @@ import { ProductCardSkeleton } from '../components/Skeleton';
 export function Category() {
   const { slug } = useParams();
   const { getProductsByCategory, isLoading } = useProducts();
+  const { isAdmin } = useAuth();
   const navigate = useNavigate();
 
   const [sortBy, setSortBy] = useState('newest'); // 'newest', 'price_asc', 'price_desc'
+  const [offers, setOffers] = useState([]);
+
+  useEffect(() => {
+    const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+    fetch(`${API_URL}/offers`)
+      .then(res => res.json())
+      .then(data => setOffers(data))
+      .catch(err => console.error("Failed to fetch offers", err));
+  }, []);
 
   // Get products for this category
   let categoryProducts = getProductsByCategory(slug);
@@ -111,32 +123,17 @@ export function Category() {
         </div>
       </div>
 
-      {/* Promotional Banners Section */}
-      {info.promotions && info.promotions.length > 0 && (
-        <section className="container mx-auto px-4 py-2 md:py-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {info.promotions.map((promo) => (
-              <div key={promo.id} className="relative h-40 md:h-48 rounded-2xl overflow-hidden shadow-lg group cursor-pointer group">
-                <div className="absolute inset-0 bg-gray-900/40 group-hover:bg-gray-900/30 transition-colors z-10" />
-                <img
-                  src={promo.image}
-                  alt={promo.title}
-                  className="absolute inset-0 w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700"
-                />
-                <div className="relative z-20 p-6 flex flex-col justify-center h-full text-white">
-                  <span className="bg-primary-600/90 w-fit px-3 py-1 rounded-full text-[10px] md:text-xs font-semibold backdrop-blur-sm mb-2 shadow-sm">
-                    {promo.subtitle}
-                  </span>
-                  <h3 className="text-xl md:text-2xl font-bold mb-1 shadow-black/50 drop-shadow-lg">{promo.title}</h3>
-                  {/* <p className="text-gray-100 text-xs md:text-sm mb-3 shadow-black/50 drop-shadow-md">On all {info.title} products this week!</p> */}
-                  <button className="bg-white text-primary-700 px-4 py-2 rounded-lg text-xs md:text-sm font-bold hover:bg-gray-100 transition-colors w-fit shadow-lg mt-2">
-                    {promo.buttonText}
-                  </button>
-                </div>
-              </div>
+
+
+      {/* Category Specific Offers */}
+      {offers.filter(o => o.category === slug).length > 0 && (
+        <div className="container mx-auto px-4 py-4 md:py-6">
+          <div className="grid grid-cols-1 gap-6">
+            {offers.filter(o => o.category === slug).map(offer => (
+              <OfferCard key={offer._id} offer={offer} />
             ))}
           </div>
-        </section>
+        </div>
       )}
 
       {/* Products Grid */}
@@ -144,7 +141,26 @@ export function Category() {
         <div className="container mx-auto px-2 md:px-4">
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-6">
             {categoryProducts.map((product) => (
-              <ProductCard key={product._id} product={product} onEdit={handleEdit} />
+              <ProductCard
+                key={product._id}
+                product={product}
+                onEdit={handleEdit}
+                onDelete={async (id) => {
+                  if (!window.confirm("Are you sure you want to delete this product?")) return;
+                  try {
+                    const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+                    const token = localStorage.getItem('admin_token');
+                    await fetch(`${API_URL}/products/${id}`, {
+                      method: 'DELETE',
+                      headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    // Refresh products
+                    window.location.reload();
+                  } catch (e) {
+                    alert("Failed to delete");
+                  }
+                }}
+              />
             ))}
           </div>
         </div>

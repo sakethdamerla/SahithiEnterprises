@@ -119,9 +119,14 @@ export function Header() {
                     Manage Announcements
                   </Link>
                   {adminUser?.role === 'superadmin' && (
-                    <Link to="/admin?view=admins" className="block px-4 py-2.5 text-sm text-primary-700 font-semibold bg-gray-50/50 hover:bg-primary-50 border-t border-gray-50 mt-1">
-                      Admin Management
-                    </Link>
+                    <>
+                      <Link to="/admin?view=content" className="block px-4 py-2.5 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700">
+                        Card Editing
+                      </Link>
+                      <Link to="/admin?view=admins" className="block px-4 py-2.5 text-sm text-primary-700 font-semibold bg-gray-50/50 hover:bg-primary-50 border-t border-gray-50 mt-1">
+                        Admin Management
+                      </Link>
+                    </>
                   )}
                 </div>
               </div>
@@ -269,16 +274,26 @@ export function Header() {
                         </Link>
                       ))}
 
-                      {/* Superadmin Only: Admin Management */}
+                      {/* Superadmin Only: Content & Admin Management */}
                       {adminUser?.role === 'superadmin' && (
-                        <Link
-                          to="/admin?view=admins"
-                          className="flex items-center space-x-3 px-4 py-2 text-gray-600 hover:text-primary-700 hover:bg-gray-50 rounded-xl transition-all text-sm"
-                          onClick={() => setMobileMenuOpen(false)}
-                        >
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
-                          <span>Admin Management</span>
-                        </Link>
+                        <>
+                          <Link
+                            to="/admin?view=content"
+                            className="flex items-center space-x-3 px-4 py-2 text-gray-600 hover:text-primary-700 hover:bg-gray-50 rounded-xl transition-all text-sm"
+                            onClick={() => setMobileMenuOpen(false)}
+                          >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                            <span>Card Editing</span>
+                          </Link>
+                          <Link
+                            to="/admin?view=admins"
+                            className="flex items-center space-x-3 px-4 py-2 text-gray-600 hover:text-primary-700 hover:bg-gray-50 rounded-xl transition-all text-sm"
+                            onClick={() => setMobileMenuOpen(false)}
+                          >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+                            <span>Admin Management</span>
+                          </Link>
+                        </>
                       )}
                     </div>
                   </>

@@ -27,6 +27,173 @@ mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/enterpris
     .catch(err => console.error('MongoDB Connection Error:', err));
 
 // Routes
+app.get('/', (req, res) => {
+    res.send(`
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Enterprise Backend Status</title>
+            <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
+            <style>
+                :root {
+                    --bg-dark: #0a0c10;
+                    --accent-primary: #3b82f6;
+                    --accent-secondary: #8b5cf6;
+                    --text-primary: #f8fafc;
+                    --text-secondary: #94a3b8;
+                    --success: #10b981;
+                }
+
+                * {
+                    margin: 0;
+                    padding: 0;
+                    box-sizing: border-box;
+                    font-family: 'Outfit', sans-serif;
+                }
+
+                body {
+                    background-color: var(--bg-dark);
+                    background-image: 
+                        radial-gradient(circle at 20% 20%, rgba(59, 130, 246, 0.05) 0%, transparent 40%),
+                        radial-gradient(circle at 80% 80%, rgba(139, 92, 246, 0.05) 0%, transparent 40%);
+                    height: 100vh;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    color: var(--text-primary);
+                    overflow: hidden;
+                }
+
+                .container {
+                    position: relative;
+                    z-index: 1;
+                    text-align: center;
+                    padding: 3rem;
+                    background: rgba(255, 255, 255, 0.03);
+                    backdrop-filter: blur(12px);
+                    -webkit-backdrop-filter: blur(12px);
+                    border: 1px solid rgba(255, 255, 255, 0.1);
+                    border-radius: 24px;
+                    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+                    max-width: 500px;
+                    width: 90%;
+                    animation: fadeIn 1s ease-out;
+                }
+
+                @keyframes fadeIn {
+                    from { opacity: 0; transform: translateY(20px); }
+                    to { opacity: 1; transform: translateY(0); }
+                }
+
+                .logo {
+                    font-size: 2.5rem;
+                    font-weight: 600;
+                    margin-bottom: 1.5rem;
+                    background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+                    -webkit-background-clip: text;
+                    -webkit-text-fill-color: transparent;
+                    letter-spacing: -1px;
+                }
+
+                .status-box {
+                    display: inline-flex;
+                    align-items: center;
+                    gap: 10px;
+                    background: rgba(16, 185, 129, 0.1);
+                    border: 1px solid rgba(16, 185, 129, 0.2);
+                    padding: 8px 20px;
+                    border-radius: 100px;
+                    margin-bottom: 2rem;
+                }
+
+                .dot {
+                    width: 10px;
+                    height: 10px;
+                    background-color: var(--success);
+                    border-radius: 50%;
+                    box-shadow: 0 0 15px var(--success);
+                    animation: pulse 2s infinite;
+                }
+
+                @keyframes pulse {
+                    0% { transform: scale(1); opacity: 0.8; box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
+                    70% { transform: scale(1.2); opacity: 1; box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
+                    100% { transform: scale(1); opacity: 0.8; box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+                }
+
+                .status-text {
+                    color: var(--success);
+                    font-weight: 600;
+                    font-size: 0.9rem;
+                    text-transform: uppercase;
+                    letter-spacing: 1px;
+                }
+
+                .info {
+                    color: var(--text-secondary);
+                    line-height: 1.6;
+                    font-size: 1.1rem;
+                }
+
+                .footer {
+                    margin-top: 3rem;
+                    font-size: 0.8rem;
+                    color: rgba(255, 255, 255, 0.3);
+                }
+
+                /* Decorative Elements */
+                .circle {
+                    position: absolute;
+                    border-radius: 50%;
+                    filter: blur(80px);
+                    z-index: 0;
+                }
+                .circle-1 {
+                    width: 300px;
+                    height: 300px;
+                    background: var(--accent-primary);
+                    top: -150px;
+                    left: -150px;
+                    opacity: 0.1;
+                }
+                .circle-2 {
+                    width: 250px;
+                    height: 250px;
+                    background: var(--accent-secondary);
+                    bottom: -125px;
+                    right: -125px;
+                    opacity: 0.1;
+                }
+            </style>
+        </head>
+        <body>
+            <div class="circle circle-1"></div>
+            <div class="circle circle-2"></div>
+            
+            <div class="container">
+                <div class="logo">Enterprise API</div>
+                
+                <div class="status-box">
+                    <div class="dot"></div>
+                    <span class="status-text">System Core Online</span>
+                </div>
+                
+                <p class="info">
+                    The backend infrastructure is currently operational and processing requests at peak efficiency.
+                </p>
+                
+                <div class="footer">
+                    &copy; ${new Date().getFullYear()} Enterprise Product Site | Infrastructure Services
+                </div>
+            </div>
+        </body>
+        </html>
+    `);
+});
+
+// Routes
 import { v2 as cloudinary } from 'cloudinary';
 import { CloudinaryStorage } from 'multer-storage-cloudinary';
 import multer from 'multer';

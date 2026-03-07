@@ -19,6 +19,7 @@ export function Category() {
 
   const [sortBy, setSortBy] = useState('newest'); // 'newest', 'price_asc', 'price_desc'
   const [offers, setOffers] = useState([]);
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
     const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
@@ -31,11 +32,16 @@ export function Category() {
   // Get products for this category
   let categoryProducts = getProductsByCategory(slug);
 
+  // Filter products by search query
+  const filteredProducts = categoryProducts.filter((product) =>
+    product.title.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   // Sort products
   if (sortBy === 'price_asc') {
-    categoryProducts.sort((a, b) => a.price - b.price);
+    filteredProducts.sort((a, b) => a.price - b.price);
   } else if (sortBy === 'price_desc') {
-    categoryProducts.sort((a, b) => b.price - a.price);
+    filteredProducts.sort((a, b) => b.price - a.price);
   }
   // 'newest' assumed default order or no sort
 
@@ -106,19 +112,47 @@ export function Category() {
             </div>
           </div>
 
-          {/* Sort Dropdown */}
-          <div className="flex items-center gap-2 self-end md:self-auto">
-            <label htmlFor="sort" className="text-sm font-medium text-gray-700 hidden sm:block">Sort by:</label>
-            <select
-              id="sort"
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value)}
-              className="bg-white border border-gray-300 text-gray-700 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block p-2 outline-none shadow-sm transition-shadow"
-            >
-              <option value="newest">Featured</option>
-              <option value="price_asc">Price: Low to High</option>
-              <option value="price_desc">Price: High to Low</option>
-            </select>
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+            {/* Search Bar */}
+            <div className="relative flex-grow min-w-[200px] md:min-w-[300px]">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <svg className="h-4 w-4 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd" />
+                </svg>
+              </div>
+              <input
+                type="text"
+                placeholder="Search in this category..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg bg-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 sm:text-sm transition-all shadow-sm"
+              />
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery('')}
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
+                >
+                  <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              )}
+            </div>
+
+            {/* Sort Dropdown */}
+            <div className="flex items-center gap-2">
+              <label htmlFor="sort" className="text-sm font-medium text-gray-700 hidden sm:block">Sort:</label>
+              <select
+                id="sort"
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value)}
+                className="bg-white border border-gray-300 text-gray-700 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block p-2 outline-none shadow-sm transition-shadow w-full sm:w-auto"
+              >
+                <option value="newest">Featured</option>
+                <option value="price_asc">Price: Low to High</option>
+                <option value="price_desc">Price: High to Low</option>
+              </select>
+            </div>
           </div>
         </div>
       </div>
@@ -140,7 +174,7 @@ export function Category() {
       <section className="pb-12 px-2 md:px-0">
         <div className="container mx-auto px-2 md:px-4">
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-6">
-            {categoryProducts.map((product) => (
+            {filteredProducts.map((product) => (
               <ProductCard
                 key={product._id}
                 product={product}
@@ -163,6 +197,19 @@ export function Category() {
               />
             ))}
           </div>
+          {filteredProducts.length === 0 && (
+            <div className="py-20 text-center">
+              <div className="text-4xl mb-4">🔍</div>
+              <h3 className="text-lg font-medium text-gray-900">No matches found</h3>
+              <p className="text-gray-500">We couldn't find any products matching "{searchQuery}"</p>
+              <button
+                onClick={() => setSearchQuery('')}
+                className="mt-4 text-primary-600 font-medium hover:text-primary-700"
+              >
+                Clear search
+              </button>
+            </div>
+          )}
         </div>
       </section>
     </div>

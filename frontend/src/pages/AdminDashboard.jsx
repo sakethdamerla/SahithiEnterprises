@@ -595,7 +595,7 @@ export function AdminDashboard() {
                 <div>
                   {/* Form Modal */}
                   {isFormOpen && (
-                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+                    <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
                       <div className="bg-white rounded-xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto flex flex-col">
                         {/* ... Header ... */}
                         <div className="p-4 md:p-6 border-b flex justify-between items-center sticky top-0 bg-white z-10">
@@ -1188,7 +1188,7 @@ export function AdminDashboard() {
 
                     {/* Permission Management Modal */}
                     {isPermissionModalOpen && selectedAdmin && (
-                      <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+                      <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
                         <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden">
                           <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-primary-50">
                             <div>

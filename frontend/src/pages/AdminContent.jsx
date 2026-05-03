@@ -162,7 +162,7 @@ export function AdminContent() {
         <div className="space-y-6">
             <div className="flex border-b">
                 <button
-                    className="px-6 py-3 font-medium border-b-2 border-blue-600 text-blue-600"
+                    className="px-6 py-3 font-medium border-b-2 border-primary-600 text-primary-600"
                 >
                     Offer Cards
                 </button>

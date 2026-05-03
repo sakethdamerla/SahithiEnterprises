@@ -1121,7 +1121,7 @@ export function AdminDashboard() {
                               </div>
                               <div>
                                 <h4 className="font-bold text-gray-900">{admin.username}</h4>
-                                <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-primary-100 text-blue-700">
+                                <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-primary-100 text-primary-700">
                                   {admin.role}
                                 </span>
                               </div>
@@ -1282,16 +1282,16 @@ export function AdminDashboard() {
 
                     {/* Key Metrics Cards */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
-                      <div className="bg-primary-50 p-4 rounded-xl border border-blue-100 flex items-center justify-between shadow-sm">
+                      <div className="bg-primary-50 p-4 rounded-xl border border-primary-100 flex items-center justify-between shadow-sm">
                         <div>
-                          <p className="text-xs md:text-sm text-blue-600 font-semibold uppercase tracking-wider">Visits Today</p>
+                          <p className="text-xs md:text-sm text-primary-600 font-semibold uppercase tracking-wider">Visits Today</p>
                           <p className="text-2xl md:text-3xl font-bold text-gray-900 mt-1">
                             {trafficData.length > 0 && new Date(trafficData[trafficData.length - 1].date).toDateString() === new Date().toDateString()
                               ? trafficData[trafficData.length - 1].visits
                               : 0}
                           </p>
                         </div>
-                        <div className="p-3 bg-primary-100 rounded-full text-blue-600">
+                        <div className="p-3 bg-primary-100 rounded-full text-primary-600">
                           <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                         </div>
                       </div>
@@ -1331,7 +1331,7 @@ export function AdminDashboard() {
                             labelFormatter={(label) => new Date(label).toLocaleDateString()}
                             contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
                           />
-                          <Bar dataKey="visits" fill="#3b82f6" radius={[4, 4, 0, 0]} maxBarSize={50} />
+                          <Bar dataKey="visits" fill="#5E35B1" radius={[4, 4, 0, 0]} maxBarSize={50} />
                         </BarChart>
                       </ResponsiveContainer>
                     </div>

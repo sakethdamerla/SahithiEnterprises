@@ -154,7 +154,7 @@ export function BottomNav() {
               ) : activeOverlay === 'help' ? (
                 <>
                   <a
-                    href="https://wa.me/6301776156?text=Hello,%20I%20need%20help"
+                    href="https://wa.me/916301776156?text=Hello,%20I%20need%20help"
                     target="_blank"
                     rel="noopener noreferrer"
                     onClick={() => setActiveOverlay(null)}

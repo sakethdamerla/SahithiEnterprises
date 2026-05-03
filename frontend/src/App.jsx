@@ -75,7 +75,7 @@ function AppLayout() {
   // }
 
   return (
-    <div className="min-h-screen flex flex-col bg-primary-50 text-gray-900 pb-20">
+    <div className="min-h-screen flex flex-col bg-primary-50 text-gray-900 pb-32 pb-safe">
       {!location.pathname.startsWith('/admin/login') && <Header />}
 
       <main className="flex-1">

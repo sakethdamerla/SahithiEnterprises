@@ -56,7 +56,7 @@ export function Home() {
   });
 
   return (
-    <div className="container mx-auto px-4 py-4 md:py-6 max-w-7xl relative">
+    <div className="container mx-auto px-4 py-4 md:py-6 pb-24 max-w-7xl relative">
 
       {isAdmin && (
         <div className="mb-6"></div>

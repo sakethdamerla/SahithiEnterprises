@@ -574,10 +574,10 @@ export function AdminDashboard() {
   return (
     <div className="flex min-h-screen bg-primary-50 font-sans pb-20">
       {/* Main Content */}
-      <main className="flex-1 flex flex-col min-w-0 max-h-screen overflow-hidden">
+      <main className="flex-1 flex flex-col min-w-0">
 
         {/* Content Area */}
-        <div className="flex-1 overflow-y-auto p-4 md:p-8">
+        <div className="flex-1 p-4 md:p-8 pb-32">
           <div className="max-w-7xl mx-auto">
             <div className="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-4">
               <div>

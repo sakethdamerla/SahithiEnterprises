@@ -277,7 +277,7 @@ export function ProductCard({ product, onEdit, onDelete, onToggleStock, ...props
                 {onEdit && (
                   <button
                     onClick={(e) => { e.stopPropagation(); onEdit(product); }}
-                    className="px-2 py-1 bg-blue-50 text-blue-600 rounded-md hover:bg-blue-100 text-xs font-semibold md:text-xs transition-colors"
+                    className="px-2 py-1 bg-primary-50 text-primary-600 rounded-md hover:bg-primary-100 text-xs font-semibold md:text-xs transition-colors"
                   >
                     Edit
                   </button>

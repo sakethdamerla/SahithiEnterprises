@@ -12,6 +12,7 @@ import { Footer } from './components/Footer';
 import { PWAUpdatePrompt } from './components/PWAUpdatePrompt';
 import { AnnouncementPopup } from './components/AnnouncementNotification';
 import { NotificationPersistentPrompt } from './components/NotificationPersistentPrompt';
+import { BottomNav } from './components/BottomNav';
 
 // Lazy load pages
 const Home = lazy(() => import('./pages/Home').then(module => ({ default: module.Home })));
@@ -19,6 +20,7 @@ const Category = lazy(() => import('./pages/Category').then(module => ({ default
 const AdminLogin = lazy(() => import('./pages/AdminLogin').then(module => ({ default: module.AdminLogin })));
 const AdminDashboard = lazy(() => import('./pages/AdminDashboard').then(module => ({ default: module.AdminDashboard })));
 const Announcements = lazy(() => import('./pages/Announcements').then(module => ({ default: module.Announcements })));
+const HelpForm = lazy(() => import('./pages/HelpForm').then(module => ({ default: module.HelpForm })));
 
 /**
  * Component that automatically scrolls the window to the top
@@ -73,7 +75,7 @@ function AppLayout() {
   // }
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50 text-gray-900">
+    <div className="min-h-screen flex flex-col bg-primary-50 text-gray-900 pb-20">
       {!location.pathname.startsWith('/admin/login') && <Header />}
 
       <main className="flex-1">
@@ -83,6 +85,7 @@ function AppLayout() {
             <Route path="/category/:slug" element={<Category />} />
             <Route path="/admin/login" element={<AdminLogin />} />
             <Route path="/announcements" element={<Announcements />} />
+            <Route path="/help-form" element={<HelpForm />} />
             <Route
               path="/admin"
               element={
@@ -97,6 +100,8 @@ function AppLayout() {
       </main>
 
       {!location.pathname.startsWith('/admin') && <Footer />}
+
+      {!location.pathname.startsWith('/admin/login') && <BottomNav />}
 
       <PWAUpdatePrompt />
       <AnnouncementPopup />

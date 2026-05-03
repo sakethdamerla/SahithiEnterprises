@@ -114,7 +114,7 @@ export function AnnouncementPopup() {
                                     }
                                 }
                             }}
-                            className="w-full bg-gray-900 text-white py-3.5 rounded-xl font-bold hover:bg-black transition-all shadow-lg shadow-gray-900/10 active:scale-95 text-sm tracking-wide"
+                            className="w-full bg-primary-600 text-white py-3.5 rounded-xl font-bold hover:bg-primary-700 transition-all shadow-lg shadow-primary-600/10 active:scale-95 text-sm tracking-wide"
                         >
                             Okay, Got it
                         </button>

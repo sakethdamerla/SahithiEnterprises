@@ -29,7 +29,7 @@ export function AdminLogin() {
   };
 
   return (
-    <div className="min-h-[80vh] flex items-center justify-center bg-gray-50/50 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-[80vh] flex items-center justify-center bg-primary-50/50 px-4 sm:px-6 lg:px-8">
       <div className="w-full max-w-xs sm:max-w-sm space-y-6 sm:space-y-8">
 
         {/* Minimal Header */}

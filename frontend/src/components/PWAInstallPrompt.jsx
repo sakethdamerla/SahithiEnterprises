@@ -68,7 +68,7 @@ export function PWAInstallPrompt() {
                 <div className="bg-white/95 backdrop-blur-md p-5 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-white/20 relative max-w-sm ml-auto ring-1 ring-black/5">
                     <button
                         onClick={handleDismiss}
-                        className="absolute top-3 right-3 p-1.5 text-gray-400 hover:text-gray-600 bg-gray-50/50 hover:bg-gray-100 rounded-full transition-colors"
+                        className="absolute top-3 right-3 p-1.5 text-gray-400 hover:text-gray-600 bg-primary-50/50 hover:bg-gray-100 rounded-full transition-colors"
                     >
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
                     </button>
@@ -80,9 +80,9 @@ export function PWAInstallPrompt() {
                             <h3 className="font-bold text-gray-900 text-lg tracking-tight">Install App</h3>
                             <p className="text-sm text-gray-600 mt-1 leading-relaxed">Add to your Home Screen for the best experience.</p>
 
-                            <div className="mt-4 text-sm text-gray-700 bg-gray-50/80 p-3 rounded-xl space-y-2 border border-gray-100">
+                            <div className="mt-4 text-sm text-gray-700 bg-primary-50/80 p-3 rounded-xl space-y-2 border border-gray-100">
                                 <div className="flex items-center gap-3">
-                                    <span className="flex items-center justify-center w-6 h-6 bg-white rounded-lg shadow-sm text-blue-500 ring-1 ring-gray-100">
+                                    <span className="flex items-center justify-center w-6 h-6 bg-white rounded-lg shadow-sm text-primary-500 ring-1 ring-gray-100">
                                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" /></svg>
                                     </span>
                                     <span>Tap the <span className="font-bold text-gray-900">Share</span> button</span>
@@ -128,7 +128,7 @@ export function PWAInstallPrompt() {
                     </button>
                     <button
                         onClick={handleInstallClick}
-                        className="bg-gray-900 text-white px-5 py-2.5 rounded-xl text-sm font-bold hover:bg-gray-800 shadow-xl shadow-gray-900/20 active:scale-95 transition-all w-full sm:w-auto"
+                        className="bg-[#5E35B1] text-white px-5 py-2.5 rounded-xl text-sm font-bold hover:bg-[#512da8] shadow-xl shadow-primary-600/20 active:scale-95 transition-all w-full sm:w-auto"
                     >
                         Install Now
                     </button>

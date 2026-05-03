@@ -34,6 +34,7 @@ export function AdminDashboard() {
   const [formState, setFormState] = useState(emptyForm);
   const [errors, setErrors] = useState({});
   const [filter, setFilter] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
   const [activeView, setActiveView] = useState(searchParams.get('view') || 'products');
 
   useEffect(() => {
@@ -391,6 +392,64 @@ export function AdminDashboard() {
     }
   };
 
+  const grantAllPermissions = async (adminId) => {
+    if (loadingStates[`perm-all-${adminId}`]) return;
+
+    const adminToUpdate = admins.find(a => a._id === adminId);
+    if (!adminToUpdate) return;
+
+    const oldPermissions = { ...adminToUpdate.permissions };
+    const newPermissions = {
+      home: true,
+      products: true,
+      interests: true,
+      traffic: true,
+      announcements: true,
+      content: true,
+      admins: true
+    };
+
+    setAdmins(prev => prev.map(a => a._id === adminId ? { ...a, permissions: newPermissions } : a));
+    if (selectedAdmin?._id === adminId) {
+      setSelectedAdmin(prev => ({ ...prev, permissions: newPermissions }));
+    }
+
+    setActionLoading(`perm-all-${adminId}`, true);
+
+    const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+    try {
+      const res = await fetch(`${API_URL}/admin/${adminId}/permissions`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${adminUser.token}`
+        },
+        body: JSON.stringify({ permissions: newPermissions })
+      });
+
+      if (res.ok) {
+        const updatedAdmin = await res.json();
+        setAdmins(prev => prev.map(a => a._id === adminId ? updatedAdmin : a));
+        if (selectedAdmin?._id === adminId) {
+          setSelectedAdmin(updatedAdmin);
+        }
+      } else {
+        setAdmins(prev => prev.map(a => a._id === adminId ? { ...a, permissions: oldPermissions } : a));
+        if (selectedAdmin?._id === adminId) {
+          setSelectedAdmin(prev => ({ ...prev, permissions: oldPermissions }));
+        }
+      }
+    } catch (error) {
+      console.error("Error granting all permissions", error);
+      setAdmins(prev => prev.map(a => a._id === adminId ? { ...a, permissions: oldPermissions } : a));
+      if (selectedAdmin?._id === adminId) {
+        setSelectedAdmin(prev => ({ ...prev, permissions: oldPermissions }));
+      }
+    } finally {
+      setActionLoading(`perm-all-${adminId}`, false);
+    }
+  };
+
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e) => {
@@ -478,27 +537,14 @@ export function AdminDashboard() {
 
   const filteredProducts = products.filter((p) => {
     const matchesFilter = filter ? p.category === filter : true;
-    return matchesFilter;
+    const matchesSearch = searchQuery 
+      ? p.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
+        (p.description && p.description.toLowerCase().includes(searchQuery.toLowerCase()))
+      : true;
+    return matchesFilter && matchesSearch;
   });
 
-  const navItems = [
-    { id: 'home', label: 'Home', icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg> },
-    { id: 'products', label: 'Manage Products', icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" /></svg> },
-    { id: 'interests', label: 'User Interests', icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" /></svg> },
-    { id: 'traffic', label: 'Site Analytics', icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg> },
-    { id: 'announcements', label: 'Manage Announcements', icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" /></svg> },
-    { id: 'announcements', label: 'Manage Announcements', icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" /></svg> },
-  ].filter(item => {
-    if (adminUser?.role === 'superadmin') return true;
-    return adminUser?.permissions?.[item.id] !== false;
-  });
 
-  if (adminUser?.role === 'superadmin') {
-    navItems.push({ id: 'admins', label: 'Admin Management', icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg> });
-    navItems.push({ id: 'content', label: 'Card Editing', icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg> });
-  }
-
-  const { logout } = useAuth();
 
   // (Old sidebar logic removed for unified navigation)
 
@@ -527,7 +573,7 @@ export function AdminDashboard() {
   }, [location.search, activeView]);
 
   return (
-    <div className="flex min-h-screen bg-gray-50 font-sans">
+    <div className="flex min-h-screen bg-primary-50 font-sans pb-20">
       {/* Main Content */}
       <main className="flex-1 flex flex-col min-w-0 max-h-screen overflow-hidden">
 
@@ -603,7 +649,7 @@ export function AdminDashboard() {
                                   </div>
                                 )}
                                 <div className="flex items-center justify-center w-full">
-                                  <label htmlFor="dropzone-file" className="flex flex-col items-center justify-center w-full h-24 md:h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100">
+                                  <label htmlFor="dropzone-file" className="flex flex-col items-center justify-center w-full h-24 md:h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-primary-50 hover:bg-gray-100">
                                     <div className="flex flex-col items-center justify-center pt-5 pb-6">
                                       <svg className="w-6 h-6 md:w-8 md:h-8 mb-3 text-gray-500" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 16">
                                         <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2" />
@@ -715,25 +761,49 @@ export function AdminDashboard() {
 
                   {/* Product list */}
                   <section className="space-y-4 md:space-y-6">
-                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-4 rounded-xl shadow-sm border border-gray-100">
                       <div>
                         <h3 className="text-lg md:text-xl font-semibold text-gray-900">Products</h3>
-                        <p className="text-xs md:text-sm text-gray-600">
-                          {filteredProducts.length} item(s) • Stored in Database
+                        <p className="text-xs md:text-sm text-gray-500">
+                          {filteredProducts.length} item(s) found
                         </p>
                       </div>
+                      
+                      <div className="flex flex-col sm:flex-row flex-1 md:max-w-xl gap-3">
+                        <div className="relative flex-1">
+                          <svg className="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+                          <input
+                            type="text"
+                            placeholder="Search products..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm transition-all"
+                          />
+                        </div>
+                        <select
+                          className="w-full sm:w-48 px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm capitalize transition-all bg-white"
+                          value={filter}
+                          onChange={(e) => setFilter(e.target.value)}
+                        >
+                          <option value="">All Categories</option>
+                          {categories.map((c) => (
+                            <option key={c} value={c}>{c}</option>
+                          ))}
+                        </select>
+                      </div>
+
                       <button
                         onClick={() => {
                           setFormState(emptyForm);
                           setSelectedFile(null);
                           setIsFormOpen(true);
                         }}
-                        className="w-full sm:w-auto py-2 px-6 btn-primary flex items-center justify-center gap-2 mb-4 sm:mb-0 shadow-lg shadow-primary-600/20 text-sm font-medium"
+                        className="w-full md:w-auto py-2 px-5 btn-primary flex items-center justify-center gap-2 shadow-md text-sm font-medium whitespace-nowrap shrink-0"
                       >
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                           <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
                         </svg>
-                        Add New Product
+                        Add Product
                       </button>
                     </div>
 
@@ -783,7 +853,7 @@ export function AdminDashboard() {
                         <select
                           value={dateFilter}
                           onChange={(e) => setDateFilter(e.target.value)}
-                          className="appearance-none bg-gray-50 border border-gray-200 text-gray-700 py-2 pl-4 pr-8 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent cursor-pointer hover:bg-gray-100 transition-colors"
+                          className="appearance-none bg-primary-50 border border-gray-200 text-gray-700 py-2 pl-4 pr-8 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent cursor-pointer hover:bg-gray-100 transition-colors"
                         >
                           <option value="today">Today</option>
                           <option value="yesterday">Yesterday</option>
@@ -802,7 +872,7 @@ export function AdminDashboard() {
                         <p className="text-center text-sm text-gray-500 py-4">No interests found for this date range.</p>
                       ) : (
                         paginatedInterests.map((interest) => (
-                          <div key={interest._id} className="bg-gray-50 p-3 rounded-lg border border-gray-100 shadow-sm">
+                          <div key={interest._id} className="bg-primary-50 p-3 rounded-lg border border-gray-100 shadow-sm">
                             <div className="flex justify-between items-start mb-2">
                               <div>
                                 <span className="font-semibold text-gray-900 text-sm">{interest.username}</span>
@@ -824,7 +894,7 @@ export function AdminDashboard() {
                     {/* Desktop Table View */}
                     <div className="hidden md:block overflow-x-auto">
                       <table className="min-w-full divide-y divide-gray-200">
-                        <thead className="bg-gray-50">
+                        <thead className="bg-primary-50">
                           <tr>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Username</th>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Mobile</th>
@@ -860,7 +930,7 @@ export function AdminDashboard() {
                         <button
                           onClick={() => setInterestPage(p => Math.max(1, p - 1))}
                           disabled={interestPage === 1}
-                          className="px-3 py-1 text-sm border rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                          className="px-3 py-1 text-sm border rounded hover:bg-primary-50 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                           Previous
                         </button>
@@ -870,7 +940,7 @@ export function AdminDashboard() {
                         <button
                           onClick={() => setInterestPage(p => Math.min(totalInterestPages, p + 1))}
                           disabled={interestPage === totalInterestPages}
-                          className="px-3 py-1 text-sm border rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                          className="px-3 py-1 text-sm border rounded hover:bg-primary-50 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                           Next
                         </button>
@@ -939,7 +1009,7 @@ export function AdminDashboard() {
 
                     <div className="space-y-4">
                       {announcements.length === 0 ? (
-                        <div className="text-center py-10 text-gray-500 bg-gray-50 rounded-lg border border-dashed border-gray-200">
+                        <div className="text-center py-10 text-gray-500 bg-primary-50 rounded-lg border border-dashed border-gray-200">
                           No announcements yet.
                         </div>
                       ) : (
@@ -1044,7 +1114,7 @@ export function AdminDashboard() {
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                       {admins.map(admin => (
-                        <div key={admin._id} className="bg-gray-50 rounded-xl border border-gray-100 p-4 shadow-sm hover:shadow-md transition-shadow relative group">
+                        <div key={admin._id} className="bg-primary-50 rounded-xl border border-gray-100 p-4 shadow-sm hover:shadow-md transition-shadow relative group">
                           <div className="flex justify-between items-start mb-3">
                             <div className="flex items-center gap-3">
                               <div className="h-10 w-10 bg-white border border-gray-200 rounded-lg flex items-center justify-center text-lg font-bold text-gray-700">
@@ -1052,7 +1122,7 @@ export function AdminDashboard() {
                               </div>
                               <div>
                                 <h4 className="font-bold text-gray-900">{admin.username}</h4>
-                                <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-blue-100 text-blue-700">
+                                <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-primary-100 text-blue-700">
                                   {admin.role}
                                 </span>
                               </div>
@@ -1111,7 +1181,7 @@ export function AdminDashboard() {
                         </div>
                       ))}
                       {admins.length === 0 && (
-                        <div className="col-span-full py-10 text-center text-sm text-gray-500 bg-gray-50 rounded-lg border border-dashed border-gray-200">
+                        <div className="col-span-full py-10 text-center text-sm text-gray-500 bg-primary-50 rounded-lg border border-dashed border-gray-200">
                           No additional admins created yet.
                         </div>
                       )}
@@ -1121,27 +1191,41 @@ export function AdminDashboard() {
                     {isPermissionModalOpen && selectedAdmin && (
                       <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
                         <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden">
-                          <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+                          <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-primary-50">
                             <div>
                               <h3 className="text-lg font-bold text-gray-900 leading-none">Manage Permissions</h3>
                               <p className="text-xs text-gray-500 mt-1">Admin: <span className="font-bold">{selectedAdmin.username}</span></p>
                             </div>
-                            <button
-                              onClick={() => setIsPermissionModalOpen(false)}
-                              className="p-2 hover:bg-white rounded-full transition-colors text-gray-400"
-                            >
-                              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
-                            </button>
+                            <div className="flex items-center gap-2">
+                              <button
+                                onClick={() => grantAllPermissions(selectedAdmin._id)}
+                                disabled={loadingStates[`perm-all-${selectedAdmin._id}`]}
+                                className={`text-xs font-medium px-3 py-1.5 rounded-lg border ${
+                                  loadingStates[`perm-all-${selectedAdmin._id}`] ? 'opacity-50 cursor-not-allowed bg-gray-100' : 'bg-white hover:bg-primary-50 border-gray-200 text-primary-600'
+                                }`}
+                              >
+                                {loadingStates[`perm-all-${selectedAdmin._id}`] ? 'Granting...' : 'Give All Access'}
+                              </button>
+                              <button
+                                onClick={() => setIsPermissionModalOpen(false)}
+                                className="p-2 hover:bg-white rounded-full transition-colors text-gray-400"
+                              >
+                                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                              </button>
+                            </div>
                           </div>
 
                           <div className="p-6 space-y-4">
                             {[
+                              { key: 'home', label: 'Home Page', icon: '🏠' },
                               { key: 'products', label: 'Product Management', icon: '📦' },
                               { key: 'interests', label: 'User Interests', icon: '👤' },
                               { key: 'traffic', label: 'Analytics', icon: '📊' },
-                              { key: 'announcements', label: 'Announcements', icon: '📢' }
+                              { key: 'announcements', label: 'Announcements', icon: '📢' },
+                              { key: 'content', label: 'Card Editing', icon: '📝' },
+                              { key: 'admins', label: 'Admin Management', icon: '🛡️' }
                             ].map((perm) => (
-                              <div key={perm.key} className="flex items-center justify-between p-3 bg-gray-50 rounded-xl border border-gray-100">
+                              <div key={perm.key} className="flex items-center justify-between p-3 bg-primary-50 rounded-xl border border-gray-100">
                                 <div className="flex items-center gap-3">
                                   <span className="text-lg">{perm.icon}</span>
                                   <span className="text-sm font-medium text-gray-700">{perm.label}</span>
@@ -1173,7 +1257,7 @@ export function AdminDashboard() {
                             ))}
                           </div>
 
-                          <div className="p-6 bg-gray-50 border-t border-gray-100">
+                          <div className="p-6 bg-primary-50 border-t border-gray-100">
                             <button
                               onClick={() => setIsPermissionModalOpen(false)}
                               className="w-full btn-primary py-2.5 rounded-xl font-bold shadow-lg shadow-primary-600/20"
@@ -1190,7 +1274,7 @@ export function AdminDashboard() {
                 <div className="animate-in fade-in slide-in-from-bottom-2 duration-500">
                   <Home />
                 </div>
-              ) : (
+              ) : activeView === 'traffic' ? (
                 <div className="container mx-auto pb-10">
                   <section className="bg-white rounded-xl shadow-sm border p-4 md:p-6">
                     <h2 className="text-lg md:text-xl font-bold mb-6 flex items-center gap-2">
@@ -1200,7 +1284,7 @@ export function AdminDashboard() {
 
                     {/* Key Metrics Cards */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
-                      <div className="bg-blue-50 p-4 rounded-xl border border-blue-100 flex items-center justify-between shadow-sm">
+                      <div className="bg-primary-50 p-4 rounded-xl border border-blue-100 flex items-center justify-between shadow-sm">
                         <div>
                           <p className="text-xs md:text-sm text-blue-600 font-semibold uppercase tracking-wider">Visits Today</p>
                           <p className="text-2xl md:text-3xl font-bold text-gray-900 mt-1">
@@ -1209,7 +1293,7 @@ export function AdminDashboard() {
                               : 0}
                           </p>
                         </div>
-                        <div className="p-3 bg-blue-100 rounded-full text-blue-600">
+                        <div className="p-3 bg-primary-100 rounded-full text-blue-600">
                           <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                         </div>
                       </div>
@@ -1255,12 +1339,12 @@ export function AdminDashboard() {
                     </div>
                   </section>
                 </div>
-              )}
+              ) : null}
             </div>
           </div>
         </div>
-      </main >
-    </div >
+      </main>
+    </div>
   );
 }
 

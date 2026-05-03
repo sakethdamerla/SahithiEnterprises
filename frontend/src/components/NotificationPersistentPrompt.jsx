@@ -121,14 +121,14 @@ export function NotificationPersistentPrompt() {
     if (!showPrompt) return null;
 
     return (
-        <div className="fixed top-24 right-4 z-[110] animate-in slide-in-from-right-8 fade-in duration-700 ease-out">
-            <div className="bg-white/90 backdrop-blur-xl p-5 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-blue-50 max-w-sm w-80 relative overflow-hidden group hover:shadow-[0_20px_40px_-12px_rgba(0,0,0,0.15)] transition-shadow">
+        <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 pointer-events-none animate-in fade-in duration-500">
+            <div className="bg-white/95 backdrop-blur-xl p-6 rounded-2xl shadow-[0_20px_50px_-12px_rgba(94,53,177,0.25)] border border-primary-50 max-w-sm w-full pointer-events-auto relative overflow-hidden group transition-all animate-in zoom-in-95 slide-in-from-bottom-10 duration-500">
 
                 {/* Decorative blob */}
-                <div className="absolute -top-10 -right-10 w-32 h-32 bg-blue-400/10 rounded-full blur-2xl group-hover:bg-blue-400/20 transition-colors duration-700" />
+                <div className="absolute -top-10 -right-10 w-32 h-32 bg-primary-400/10 rounded-full blur-2xl group-hover:bg-primary-400/20 transition-colors duration-700" />
 
                 <div className="flex items-start gap-4 relative z-10">
-                    <div className="bg-gradient-to-br from-blue-500 to-blue-600 p-2.5 rounded-xl shrink-0 shadow-lg shadow-blue-500/20 text-white relative">
+                    <div className="bg-gradient-to-br from-primary-500 to-primary-600 p-2.5 rounded-xl shrink-0 shadow-lg shadow-primary-500/20 text-white relative">
                         <span className="absolute -top-1 -right-1 flex h-3 w-3">
                             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
                             <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500 ring-2 ring-white"></span>
@@ -146,13 +146,13 @@ export function NotificationPersistentPrompt() {
                 <div className="grid grid-cols-2 gap-3 mt-5 relative z-10">
                     <button
                         onClick={handleDismiss}
-                        className="px-4 py-2 text-gray-500 hover:text-gray-700 hover:bg-gray-50 rounded-lg text-xs font-semibold transition-colors"
+                        className="px-4 py-2 text-gray-500 hover:text-gray-700 hover:bg-primary-50 rounded-lg text-xs font-semibold transition-colors"
                     >
                         Maybe Later
                     </button>
                     <button
                         onClick={handleRequestAction}
-                        className="px-4 py-2 bg-gray-900 text-white hover:bg-black rounded-lg text-xs font-bold transition-all shadow-lg shadow-gray-900/10 active:scale-95 flex items-center justify-center gap-1.5"
+                        className="px-4 py-2 bg-[#5E35B1] text-white hover:bg-[#512da8] rounded-lg text-xs font-bold transition-all shadow-lg shadow-primary-600/10 active:scale-95 flex items-center justify-center gap-1.5"
                     >
                         <span>Enable</span>
                         <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" /></svg>

@@ -44,7 +44,7 @@ export function Announcements() {
                 </div>
             ) : announcements.length === 0 ? (
                 <div className="text-center py-16 bg-white rounded-xl shadow-sm border border-gray-100">
-                    <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4 text-gray-400">
+                    <div className="w-16 h-16 bg-primary-50 rounded-full flex items-center justify-center mx-auto mb-4 text-gray-400">
                         <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" /></svg>
                     </div>
                     <h3 className="text-lg font-medium text-gray-900">No Announcements</h3>
@@ -58,7 +58,7 @@ export function Announcements() {
 
                             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start mb-3 gap-2">
                                 <h2 className="text-lg md:text-xl font-bold text-gray-900 group-hover:text-primary-700 transition-colors leading-tight">{item.title}</h2>
-                                <span className="text-xs font-medium text-gray-500 bg-gray-50 px-2 py-1 rounded-full border border-gray-100 self-start sm:self-auto shrink-0">
+                                <span className="text-xs font-medium text-gray-500 bg-primary-50 px-2 py-1 rounded-full border border-gray-100 self-start sm:self-auto shrink-0">
                                     {new Date(item.date).toLocaleDateString()}
                                 </span>
                             </div>

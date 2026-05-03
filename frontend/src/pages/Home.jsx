@@ -83,7 +83,7 @@ export function Home() {
             </span>
           </div>
           {/* Divider */}
-          <div className="h-1 w-24 mt-2 bg-blue-600 rounded-full"></div>
+          <div className="h-1 w-24 mt-2 bg-primary-600 rounded-full"></div>
         </div>
 
         {isLoadingContent || productsLoading ? (
@@ -123,7 +123,7 @@ export function Home() {
             })}
           </div>
         ) : (
-          <div className="text-center py-20 bg-gray-50 rounded-2xl border border-gray-100 border-dashed">
+          <div className="text-center py-20 bg-primary-50 rounded-2xl border border-gray-100 border-dashed">
             <div className="text-6xl mb-4">📭</div>
             <h3 className="text-xl font-bold text-gray-900 mb-2">No Categories Found</h3>
           </div>

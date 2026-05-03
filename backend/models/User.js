@@ -18,10 +18,13 @@ const userSchema = new mongoose.Schema({
         default: 'admin'
     },
     permissions: {
+        home: { type: Boolean, default: true },
         products: { type: Boolean, default: true },
         interests: { type: Boolean, default: true },
         traffic: { type: Boolean, default: true },
-        announcements: { type: Boolean, default: true }
+        announcements: { type: Boolean, default: true },
+        content: { type: Boolean, default: true },
+        admins: { type: Boolean, default: false }
     }
 }, { timestamps: true });
 

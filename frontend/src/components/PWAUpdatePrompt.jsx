@@ -105,7 +105,7 @@ export function PWAUpdatePrompt() {
 
                 <div className="flex flex-col gap-2 relative z-10 mt-5">
                     <button
-                        className="w-full bg-gray-900 text-white px-4 py-3 rounded-xl text-sm font-bold hover:bg-black shadow-lg shadow-gray-900/10 transition-all active:scale-95 flex justify-center items-center gap-2"
+                        className="w-full bg-[#5E35B1] text-white px-4 py-3 rounded-xl text-sm font-bold hover:bg-[#5E35B1] shadow-lg shadow-gray-900/10 transition-all active:scale-95 flex justify-center items-center gap-2"
                         onClick={handleUpdate}
                     >
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>

@@ -199,7 +199,7 @@ export function ProductCard({ product, onEdit, onDelete, onToggleStock, ...props
 
           {/* Out of Stock Overlay */}
           {product.isTemporarilyClosed && (
-            <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+            <div className="absolute inset-0 bg-[#5E35B1]/50 flex items-center justify-center">
               <span className="bg-red-600 text-white px-2 py-1 md:px-4 md:py-2 rounded-lg font-bold uppercase tracking-wider text-[10px] md:text-sm shadow-lg transform -rotate-12 border-2 border-white">
                 Out of Stock
               </span>
@@ -310,7 +310,7 @@ export function ProductCard({ product, onEdit, onDelete, onToggleStock, ...props
                   className={`w-full sm:w-auto px-2 py-1.5 md:px-4 md:py-2 text-white rounded-lg font-medium text-xs md:text-sm focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors
                     ${product.isTemporarilyClosed
                       ? 'bg-gray-400 cursor-not-allowed'
-                      : 'bg-primary-600 hover:bg-primary-700 focus:ring-primary-500'
+                      : 'bg-[#5E35B1] hover:bg-primary-700 focus:ring-primary-500'
                     }`}
                 >
                   {product.isTemporarilyClosed
@@ -328,7 +328,7 @@ export function ProductCard({ product, onEdit, onDelete, onToggleStock, ...props
 
                 {/* Interest Popup Modal */}
                 {showInput && (
-                  <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200" onClick={(e) => e.stopPropagation()}>
+                  <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#5E35B1]/60 backdrop-blur-sm animate-in fade-in duration-200" onClick={(e) => e.stopPropagation()}>
                     <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 transform scale-100 transition-all">
                       <div className="text-center mb-6">
                         <div className="w-12 h-12 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-3">
@@ -378,7 +378,7 @@ export function ProductCard({ product, onEdit, onDelete, onToggleStock, ...props
                           <button
                             type="submit"
                             disabled={loading}
-                            className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 font-medium transition-colors shadow-lg shadow-primary-600/30 disabled:opacity-75 flex justify-center items-center"
+                            className="px-4 py-2 bg-[#5E35B1] text-white rounded-lg hover:bg-primary-700 font-medium transition-colors shadow-lg shadow-primary-600/30 disabled:opacity-75 flex justify-center items-center"
                           >
                             {loading ? 'Sending...' : 'Submit'}
                           </button>
@@ -389,7 +389,7 @@ export function ProductCard({ product, onEdit, onDelete, onToggleStock, ...props
                 )}
 
                 {message && (
-                  <div className="fixed bottom-4 right-4 z-50 bg-gray-900 text-white px-6 py-3 rounded-lg shadow-lg flex items-center gap-3 animate-in slide-in-from-bottom duration-300">
+                  <div className="fixed bottom-4 right-4 z-50 bg-[#5E35B1] text-white px-6 py-3 rounded-lg shadow-lg flex items-center gap-3 animate-in slide-in-from-bottom duration-300">
                     <span className="text-green-400">✓</span>
                     {message}
                   </div>
@@ -402,12 +402,12 @@ export function ProductCard({ product, onEdit, onDelete, onToggleStock, ...props
 
       {/* Full Details Popup Modal */}
       {showDetails && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-200" onClick={() => setShowDetails(false)}>
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-[#5E35B1]/80 backdrop-blur-md animate-in fade-in duration-200" onClick={() => setShowDetails(false)}>
           <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm overflow-hidden flex flex-col transform transition-all scale-100" onClick={e => e.stopPropagation()}>
             {/* Close Button */}
             <button
               onClick={() => setShowDetails(false)}
-              className="absolute top-2 right-2 z-10 bg-black/20 hover:bg-black/40 text-white rounded-full p-1.5 transition-colors backdrop-blur-sm"
+              className="absolute top-2 right-2 z-10 bg-[#5E35B1]/20 hover:bg-[#5E35B1]/40 text-white rounded-full p-1.5 transition-colors backdrop-blur-sm"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
             </button>
@@ -424,7 +424,7 @@ export function ProductCard({ product, onEdit, onDelete, onToggleStock, ...props
                 {product.category}
               </div>
               {product.isTemporarilyClosed && (
-                <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                <div className="absolute inset-0 bg-[#5E35B1]/50 flex items-center justify-center">
                   <span className="bg-red-600 text-white px-3 py-1 rounded font-bold uppercase text-xs shadow-lg transform -rotate-12 border border-white">
                     Out of Stock
                   </span>
@@ -467,7 +467,7 @@ export function ProductCard({ product, onEdit, onDelete, onToggleStock, ...props
                       ? 'bg-gray-400 cursor-not-allowed'
                       : isInterestSubmitted
                         ? 'bg-green-600 text-white opacity-90'
-                        : 'bg-primary-600 text-white hover:bg-primary-700'
+                        : 'bg-[#5E35B1] text-white hover:bg-primary-700'
                       }`}
                   >
                     {product.isTemporarilyClosed ? 'Out of Stock' : (isInterestSubmitted ? 'Response Recorded ✓' : "I'm Interested")}

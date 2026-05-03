@@ -105,7 +105,7 @@ export function BottomNav() {
         <>
           {/* Backdrop */}
           <div 
-            className="fixed inset-0 z-[40] bg-black/40 backdrop-blur-sm transition-opacity"
+            className="fixed inset-0 z-[40] bg-[#5E35B1]/40 backdrop-blur-sm transition-opacity"
             onClick={() => setActiveOverlay(null)}
           />
           

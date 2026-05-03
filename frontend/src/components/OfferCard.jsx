@@ -27,7 +27,7 @@ export function OfferCard({ offer }) {
             />
 
             {/* Dark Dimmer Overlay */}
-            <div className={`absolute inset-0 bg-black/50 group-hover:bg-black/60 transition-colors`} />
+            <div className={`absolute inset-0 bg-[#5E35B1]/50 group-hover:bg-[#5E35B1]/60 transition-colors`} />
 
             {/* Content */}
             <div className={`relative z-10 h-full p-4 md:p-6 flex flex-col justify-center ${contentAlignment[position] || contentAlignment.left}`}>

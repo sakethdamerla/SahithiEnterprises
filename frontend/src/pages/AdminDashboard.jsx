@@ -1234,7 +1234,7 @@ export function AdminDashboard() {
                                   onClick={() => togglePermission(selectedAdmin._id, perm.key)}
                                   className={`
                                 relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none
-                                ${selectedAdmin.permissions?.[perm.key] ? 'bg-primary-600' : 'bg-gray-200'}
+                                ${selectedAdmin.permissions?.[perm.key] ? 'bg-[#5E35B1]' : 'bg-gray-200'}
                                 ${loadingStates[`perm-${selectedAdmin._id}-${perm.key}`] ? 'opacity-50 cursor-not-allowed' : ''}
                               `}
                                   disabled={loadingStates[`perm-${selectedAdmin._id}-${perm.key}`]}

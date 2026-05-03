@@ -400,7 +400,6 @@ export function AdminDashboard() {
 
     const oldPermissions = { ...adminToUpdate.permissions };
     const newPermissions = {
-      home: true,
       products: true,
       interests: true,
       traffic: true,
@@ -1217,7 +1216,6 @@ export function AdminDashboard() {
 
                           <div className="p-6 space-y-4">
                             {[
-                              { key: 'home', label: 'Home Page', icon: '🏠' },
                               { key: 'products', label: 'Product Management', icon: '📦' },
                               { key: 'interests', label: 'User Interests', icon: '👤' },
                               { key: 'traffic', label: 'Analytics', icon: '📊' },

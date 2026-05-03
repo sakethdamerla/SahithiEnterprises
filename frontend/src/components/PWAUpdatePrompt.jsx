@@ -12,81 +12,29 @@ export function PWAUpdatePrompt() {
         updateServiceWorker,
     } = useRegisterSW({
         onRegistered(r) {
-            console.log('SW Registered: ', r)
+            console.log('SW Registered');
+            // Check for updates every hour
+            if (r) {
+                setInterval(() => {
+                    r.update();
+                }, 60 * 60 * 1000);
+            }
         },
         onRegisterError(error) {
             console.log('SW registration error', error)
         },
     })
 
-    // State to control prompt visibility based on version check
-    const [showPrompt, setShowPrompt] = useState(false);
-
-    useEffect(() => {
-        if (needRefresh) {
-            checkVersion();
-        }
-    }, [needRefresh]);
-
-    const checkVersion = async () => {
-        try {
-            const response = await fetch('/manifest.json');
-            const manifest = await response.json();
-            const serverVersion = manifest.version;
-            const localVersion = localStorage.getItem('pwaVersion');
-
-            // Show prompt only if version changed or never stored
-            if (serverVersion && serverVersion !== localVersion) {
-                setShowPrompt(true);
-            } else if (!localVersion) {
-                // First time visit or no version stored, but update available.
-                setShowPrompt(true);
-            }
-        } catch (error) {
-            console.error('Failed to check PWA version:', error);
-        }
-    };
-
-    // Reload the page to activate the new SW
-    const handleUpdate = async () => {
-        try {
-            // Unregister SW
-            if ('serviceWorker' in navigator) {
-                const registrations = await navigator.serviceWorker.getRegistrations();
-                for (const registration of registrations) {
-                    await registration.unregister();
-                }
-            }
-            // Clear Caches
-            if ('caches' in window) {
-                const keys = await caches.keys();
-                for (const key of keys) {
-                    await caches.delete(key);
-                }
-            }
-
-            // Store the new version so we don't prompt again for the same version
-            const response = await fetch('/manifest.webmanifest');
-            const manifest = await response.json();
-            if (manifest.version) {
-                localStorage.setItem('pwaVersion', manifest.version);
-            }
-
-            // Redirect/Reload to site
-            window.location.reload();
-        } catch (e) {
-            console.error("Update/Uninstall failed", e);
-            // Fallback reload
-            window.location.reload();
-        }
+    const close = () => {
+        setNeedRefresh(false)
     }
 
-    if (!showPrompt) return null;
+    if (!needRefresh) return null;
 
     return (
         <div className="fixed bottom-4 left-4 right-4 md:right-auto md:left-4 z-[100] animate-in slide-in-from-bottom duration-700 ease-out">
             <div className="bg-white/90 backdrop-blur-xl p-5 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-primary-100 max-w-sm w-full relative overflow-hidden group hover:shadow-[0_20px_40px_-12px_rgba(0,0,0,0.15)] transition-shadow">
-
+                
                 {/* Decorative blob */}
                 <div className="absolute top-0 right-0 w-32 h-32 bg-primary-400/10 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2 group-hover:bg-primary-400/20 transition-colors duration-700"></div>
 
@@ -106,10 +54,16 @@ export function PWAUpdatePrompt() {
                 <div className="flex flex-col gap-2 relative z-10 mt-5">
                     <button
                         className="w-full bg-[#5E35B1] text-white px-4 py-3 rounded-xl text-sm font-bold hover:bg-[#5E35B1] shadow-lg shadow-gray-900/10 transition-all active:scale-95 flex justify-center items-center gap-2"
-                        onClick={handleUpdate}
+                        onClick={() => updateServiceWorker(true)}
                     >
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
                         Update Now
+                    </button>
+                    <button
+                        className="w-full bg-gray-100 text-gray-600 px-4 py-2 rounded-xl text-xs font-bold hover:bg-gray-200 transition-all"
+                        onClick={close}
+                    >
+                        Maybe Later
                     </button>
                 </div>
             </div>

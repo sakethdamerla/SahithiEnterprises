@@ -81,7 +81,7 @@ export function Header() {
                     <Link
                       key={category}
                       to={`/category/${category}`}
-                      className="block px-4 py-2 text-gray-700 hover:bg-primary-50 hover:text-primary-600 transition-colors capitalize"
+                      className="block px-4 py-2 text-gray-700 hover:bg-primary-50 hover:text-[#5E35B1] transition-colors capitalize"
                       role="menuitem"
                       onClick={() => setCategoryDropdownOpen(false)}
                     >
@@ -106,24 +106,24 @@ export function Header() {
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" /></svg>
                 </button>
                 <div className="absolute top-full right-0 mt-2 w-56 bg-white rounded-xl shadow-xl py-2 invisible group-hover:visible opacity-0 group-hover:opacity-100 transition-all duration-200 border border-gray-100">
-                  <Link to="/admin?view=products" className="block px-4 py-2.5 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700">
+                  <Link to="/admin?view=products" className="block px-4 py-2.5 text-sm text-gray-700 hover:bg-primary-50 hover:text-[#5E35B1]">
                     Manage Products
                   </Link>
-                  <Link to="/admin?view=interests" className="block px-4 py-2.5 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700">
+                  <Link to="/admin?view=interests" className="block px-4 py-2.5 text-sm text-gray-700 hover:bg-primary-50 hover:text-[#5E35B1]">
                     User Interests
                   </Link>
-                  <Link to="/admin?view=traffic" className="block px-4 py-2.5 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700">
+                  <Link to="/admin?view=traffic" className="block px-4 py-2.5 text-sm text-gray-700 hover:bg-primary-50 hover:text-[#5E35B1]">
                     Site Analytics
                   </Link>
-                  <Link to="/admin?view=announcements" className="block px-4 py-2.5 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700">
+                  <Link to="/admin?view=announcements" className="block px-4 py-2.5 text-sm text-gray-700 hover:bg-primary-50 hover:text-[#5E35B1]">
                     Manage Announcements
                   </Link>
                   {adminUser?.role === 'superadmin' && (
                     <>
-                      <Link to="/admin?view=content" className="block px-4 py-2.5 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700">
+                      <Link to="/admin?view=content" className="block px-4 py-2.5 text-sm text-gray-700 hover:bg-primary-50 hover:text-[#5E35B1]">
                         Card Editing
                       </Link>
-                      <Link to="/admin?view=admins" className="block px-4 py-2.5 text-sm text-primary-700 font-semibold bg-primary-50/50 hover:bg-primary-50 border-t border-gray-50 mt-1">
+                      <Link to="/admin?view=admins" className="block px-4 py-2.5 text-sm text-[#5E35B1] font-semibold bg-primary-50/50 hover:bg-primary-50 border-t border-gray-50 mt-1">
                         Admin Management
                       </Link>
                     </>

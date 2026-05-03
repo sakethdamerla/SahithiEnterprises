@@ -1,5 +1,5 @@
 import { useRegisterSW } from 'virtual:pwa-register/react'
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 
 /**
  * PWAUpdatePrompt Component
@@ -13,17 +13,35 @@ export function PWAUpdatePrompt() {
     } = useRegisterSW({
         onRegistered(r) {
             console.log('SW Registered');
-            // Check for updates every hour
+            // Check for updates every 5 minutes (reduced from 60 mins for faster updates)
             if (r) {
                 setInterval(() => {
                     r.update();
-                }, 60 * 60 * 1000);
+                }, 5 * 60 * 1000);
             }
         },
         onRegisterError(error) {
             console.log('SW registration error', error)
         },
     })
+
+    // Check for updates when the window/app gains focus
+    useEffect(() => {
+        const handleFocus = () => {
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.getRegistration().then(reg => {
+                    if (reg) reg.update();
+                });
+            }
+        };
+
+        window.addEventListener('focus', handleFocus);
+        
+        // Also check immediately on mount
+        handleFocus();
+
+        return () => window.removeEventListener('focus', handleFocus);
+    }, []);
 
     const close = () => {
         setNeedRefresh(false)

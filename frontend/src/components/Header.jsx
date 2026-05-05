@@ -118,11 +118,13 @@ export function Header() {
                   <Link to="/admin?view=announcements" className="block px-4 py-2.5 text-sm text-gray-700 hover:bg-primary-50 hover:text-[#5E35B1]">
                     Manage Announcements
                   </Link>
+                  {(adminUser?.role === 'superadmin' || adminUser?.permissions?.content !== false) && (
+                    <Link to="/admin?view=content" className="block px-4 py-2.5 text-sm text-gray-700 hover:bg-primary-50 hover:text-[#5E35B1]">
+                      Card Editing
+                    </Link>
+                  )}
                   {adminUser?.role === 'superadmin' && (
                     <>
-                      <Link to="/admin?view=content" className="block px-4 py-2.5 text-sm text-gray-700 hover:bg-primary-50 hover:text-[#5E35B1]">
-                        Card Editing
-                      </Link>
                       <Link to="/admin?view=admins" className="block px-4 py-2.5 text-sm text-[#5E35B1] font-semibold bg-primary-50/50 hover:bg-primary-50 border-t border-gray-50 mt-1">
                         Admin Management
                       </Link>

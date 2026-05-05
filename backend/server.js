@@ -702,8 +702,8 @@ app.get('/api/offers', async (req, res) => {
     }
 });
 
-// Create Offer (Superadmin Only)
-app.post('/api/offers', protect, superadminOnly, upload.single('image'), async (req, res) => {
+// Create Offer (Admins)
+app.post('/api/offers', protect, upload.single('image'), async (req, res) => {
     try {
         const offerData = req.body;
         if (req.file) {
@@ -724,7 +724,7 @@ app.post('/api/offers', protect, superadminOnly, upload.single('image'), async (
 });
 
 // Update Offer
-app.put('/api/offers/:id', protect, superadminOnly, upload.single('image'), async (req, res) => {
+app.put('/api/offers/:id', protect, upload.single('image'), async (req, res) => {
     try {
         const offer = await Offer.findById(req.params.id);
         if (!offer) return res.status(404).json({ message: 'Offer not found' });
@@ -751,7 +751,7 @@ app.put('/api/offers/:id', protect, superadminOnly, upload.single('image'), asyn
 });
 
 // Delete Offer
-app.delete('/api/offers/:id', protect, superadminOnly, async (req, res) => {
+app.delete('/api/offers/:id', protect, async (req, res) => {
     try {
         const offer = await Offer.findById(req.params.id);
         if (!offer) return res.status(404).json({ message: 'Offer not found' });
